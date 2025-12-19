@@ -119,7 +119,8 @@
 
                 <!-- Model Selection -->
                 <div class="card">
-                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Выберите модель</label>
+                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Выберите
+                        модель</label>
                     <select id="generation-model-select" onchange="app.updateModelSelection()">
                         <option value="demo">Демо модель (без обучения)</option>
                     </select>
@@ -127,13 +128,16 @@
 
                 <!-- Prompt Input -->
                 <div class="card" style="padding: 15px;">
-                    <textarea id="generation-prompt" rows="3" placeholder="Опишите образ..." style="margin-bottom: 8px; font-size: 15px;"></textarea>
-                    <p class="text-dim" style="font-size: 0.7rem; margin: 0 0 12px 0;">✨ Промпт улучшится автоматически</p>
+                    <textarea id="generation-prompt" rows="3" placeholder="Опишите образ..."
+                        style="margin-bottom: 8px; font-size: 15px;"></textarea>
+                    <p class="text-dim" style="font-size: 0.7rem; margin: 0 0 12px 0;">✨ Промпт улучшится автоматически
+                    </p>
 
                     <!-- Compact Settings Row -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                         <!-- Aspect Ratio Button -->
-                        <button class="settings-btn" onclick="app.showRatioModal()" style="justify-content: space-between; padding: 10px 12px;">
+                        <button class="settings-btn" onclick="app.showRatioModal()"
+                            style="justify-content: space-between; padding: 10px 12px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <div id="ratio-icon"></div>
                                 <span id="ratio-label" style="font-size: 13px; font-weight: 500;">2:3</span>
@@ -142,7 +146,8 @@
                         </button>
 
                         <!-- Photo Count Select -->
-                        <select id="photo-count-select" onchange="app.updatePhotoCount()" style="margin-bottom: 0; padding: 10px 12px; font-size: 13px; background: var(--bg-input); border: 1px solid var(--border-color);">
+                        <select id="photo-count-select" onchange="app.updatePhotoCount()"
+                            style="margin-bottom: 0; padding: 10px 12px; font-size: 13px; background: var(--bg-input); border: 1px solid var(--border-color);">
                             <option value="1">1 фото</option>
                             <option value="2">2 фото</option>
                             <option value="3">3 фото</option>
@@ -154,7 +159,8 @@
                         </select>
                     </div>
 
-                    <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()" style="padding: 14px; font-size: 15px;">
+                    <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()"
+                        style="padding: 14px; font-size: 15px;">
                         <span id="generation-cost">4 фото — 8 💎</span>
                     </button>
                 </div>
@@ -169,7 +175,8 @@
 
                 <div class="card" style="margin-top: 2rem; background: linear-gradient(145deg, #1a1a1a, #222);">
                     <h3>Хотите персонализированные портреты?</h3>
-                    <p class="text-dim" style="font-size: 0.9rem;">Обучите персональную модель для создания портретов с вашим лицом.</p>
+                    <p class="text-dim" style="font-size: 0.9rem;">Обучите персональную модель для создания портретов с
+                        вашим лицом.</p>
                     <div class="flex gap-2">
                         <button class="btn btn-primary" onclick="app.nav('create')">Создать модель</button>
                         <button class="btn btn-secondary" onclick="app.nav('settings')">💎 Купить кристаллы</button>
@@ -184,27 +191,34 @@
 
                 <!-- Model Name -->
                 <div class="card">
-                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Название модели</label>
+                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Название
+                        модели</label>
                     <input type="text" id="model-name" placeholder="Например: Мария Студия"
                         style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
                 </div>
 
                 <!-- Gender Selection -->
                 <div class="card">
-                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 10px;">Укажите пол человека на фотографиях</label>
+                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 10px;">Укажите пол
+                        человека на фотографиях</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                        <button class="ratio-btn active" data-gender="man" onclick="app.selectGender('man')">👨 Мужчина</button>
-                        <button class="ratio-btn" data-gender="woman" onclick="app.selectGender('woman')">👩 Женщина</button>
-                        <button class="ratio-btn" data-gender="person" onclick="app.selectGender('person')">🧑 Другое</button>
+                        <button class="ratio-btn active" data-gender="man" onclick="app.selectGender('man')">👨
+                            Мужчина</button>
+                        <button class="ratio-btn" data-gender="woman" onclick="app.selectGender('woman')">👩
+                            Женщина</button>
+                        <button class="ratio-btn" data-gender="person" onclick="app.selectGender('person')">🧑
+                            Другое</button>
                     </div>
-                    <p class="text-dim" style="font-size: 0.75rem; margin-top: 10px;">Это важно для правильной обработки AI моделью</p>
+                    <p class="text-dim" style="font-size: 0.75rem; margin-top: 10px;">Это важно для правильной обработки
+                        AI моделью</p>
                 </div>
 
                 <!-- Photo Upload -->
                 <div class="card">
                     <h3 style="margin-bottom: 15px;">Загрузите фотографии (10-20 штук)</h3>
 
-                    <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                    <div
+                        style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
                         <h4 style="color: #ffc107; margin-bottom: 10px;">⚠️ Важные требования к фото:</h4>
                         <ul class="text-dim" style="padding-left: 20px; font-size: 0.85rem; line-height: 1.6;">
                             <li><strong>Одно лицо</strong> — на фото должен быть только один человек</li>
@@ -227,7 +241,9 @@
                     </div>
 
                     <!-- Preview Area -->
-                    <div id="photo-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 15px;"></div>
+                    <div id="photo-preview"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 15px;">
+                    </div>
                 </div>
 
                 <button class="btn btn-primary" onclick="app.startTraining()" id="train-btn" disabled>
@@ -262,17 +278,7 @@
                 </div>
 
                 <!-- Model Card Processing -->
-                <div class="card" style="opacity: 0.7;">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3>Project X</h3>
-                            <span style="color: #eab308; font-size: 0.8rem;">● Обучение (12 мин...)</span>
-                        </div>
-                        <div class="loader"
-                            style="width: 20px; height: 20px; border: 2px solid #555; border-top-color: #fff; border-radius: 50%; animation: spin 1s infinite;">
-                        </div>
-                    </div>
-                </div>
+
             </section>
 
             <!-- VIEW: GENERATOR (WITH MODEL) -->
@@ -383,25 +389,30 @@
                     <h3 style="margin-bottom: 20px;">Выберите пакет:</h3>
                     <div id="packages-grid"
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                        <div class="card package-card" data-crystals="100" data-amount="3000" style="text-align: center; cursor: pointer; transition: all 0.3s;"
+                        <div class="card package-card" data-crystals="100" data-amount="3000"
+                            style="text-align: center; cursor: pointer; transition: all 0.3s;"
                             onclick="app.selectPackage(100, 3000, event.currentTarget)">
                             <h2 style="font-size: 2rem; margin-bottom: 10px;">💎 100</h2>
                             <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 5px;">3000₸</p>
                             <p class="text-dim" style="font-size: 0.85rem;">Базовый</p>
                         </div>
-                        <div class="card package-card" data-crystals="200" data-amount="5500" style="text-align: center; cursor: pointer; transition: all 0.3s;"
+                        <div class="card package-card" data-crystals="200" data-amount="5500"
+                            style="text-align: center; cursor: pointer; transition: all 0.3s;"
                             onclick="app.selectPackage(200, 5500, event.currentTarget)">
                             <div style="position: relative;">
-                                <span style="position: absolute; top: -10px; right: -10px; background: #22c55e; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">ПОПУЛЯРНЫЙ</span>
+                                <span
+                                    style="position: absolute; top: -10px; right: -10px; background: #22c55e; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">ПОПУЛЯРНЫЙ</span>
                             </div>
                             <h2 style="font-size: 2rem; margin-bottom: 10px;">💎 200</h2>
                             <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 5px;">5500₸</p>
                             <p class="text-dim" style="font-size: 0.85rem;">Экономия 500₸</p>
                         </div>
-                        <div class="card package-card" data-crystals="500" data-amount="12000" style="text-align: center; cursor: pointer; transition: all 0.3s;"
+                        <div class="card package-card" data-crystals="500" data-amount="12000"
+                            style="text-align: center; cursor: pointer; transition: all 0.3s;"
                             onclick="app.selectPackage(500, 12000, event.currentTarget)">
                             <div style="position: relative;">
-                                <span style="position: absolute; top: -10px; right: -10px; background: #eab308; color: #000; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">ВЫГОДНЫЙ</span>
+                                <span
+                                    style="position: absolute; top: -10px; right: -10px; background: #eab308; color: #000; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">ВЫГОДНЫЙ</span>
                             </div>
                             <h2 style="font-size: 2rem; margin-bottom: 10px;">💎 500</h2>
                             <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 5px;">12000₸</p>
@@ -414,24 +425,29 @@
                         <p class="text-dim" style="margin-bottom: 20px;">Пакет: <span id="selected-package"></span></p>
 
                         <div style="margin-bottom: 15px;">
-                            <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Номер телефона Kaspi</label>
+                            <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Номер
+                                телефона Kaspi</label>
                             <input type="tel" id="kaspi-phone" placeholder="+7 (___) ___-__-__"
                                 style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); margin-bottom: 0;">
                         </div>
 
                         <div style="margin-bottom: 20px;">
-                            <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Имя в Kaspi (как подписано)</label>
+                            <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Имя в
+                                Kaspi (как подписано)</label>
                             <input type="text" id="kaspi-name" placeholder="Например: Диана З."
                                 style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); margin-bottom: 0;">
                         </div>
 
-                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+                        <div
+                            style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
                             <p class="text-dim" style="font-size: 0.85rem; line-height: 1.5; margin: 0;">
-                                💡 После отправки запроса администратор вышлет счет на указанный номер Kaspi. Вам придет уведомление для оплаты.
+                                💡 После отправки запроса администратор вышлет счет на указанный номер Kaspi. Вам придет
+                                уведомление для оплаты.
                             </p>
                         </div>
 
-                        <button class="btn btn-primary" onclick="app.createPayment()" style="cursor: pointer; user-select: none;">
+                        <button class="btn btn-primary" onclick="app.createPayment()"
+                            style="cursor: pointer; user-select: none;">
                             Отправить запрос
                         </button>
                     </div>
@@ -519,28 +535,34 @@
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                 <!-- 2:3 Portrait -->
                 <button class="ratio-option" onclick="app.selectRatio('2:3')" data-ratio="2:3">
-                    <div class="ratio-visual" style="aspect-ratio: 2/3; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    <div class="ratio-visual"
+                        style="aspect-ratio: 2/3; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
                     <div style="font-weight: 600; margin-top: 8px;">2:3</div>
                     <div class="text-dim" style="font-size: 11px;">Портрет</div>
                 </button>
 
                 <!-- 1:1 Square -->
                 <button class="ratio-option" onclick="app.selectRatio('1:1')" data-ratio="1:1">
-                    <div class="ratio-visual" style="aspect-ratio: 1/1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    <div class="ratio-visual"
+                        style="aspect-ratio: 1/1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
                     <div style="font-weight: 600; margin-top: 8px;">1:1</div>
                     <div class="text-dim" style="font-size: 11px;">Квадрат</div>
                 </button>
 
                 <!-- 16:9 Landscape -->
                 <button class="ratio-option" onclick="app.selectRatio('16:9')" data-ratio="16:9">
-                    <div class="ratio-visual" style="aspect-ratio: 16/9; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                    <div class="ratio-visual"
+                        style="aspect-ratio: 16/9; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    </div>
                     <div style="font-weight: 600; margin-top: 8px;">16:9</div>
                     <div class="text-dim" style="font-size: 11px;">Широкий</div>
                 </button>
 
                 <!-- 9:16 Vertical -->
                 <button class="ratio-option" onclick="app.selectRatio('9:16')" data-ratio="9:16">
-                    <div class="ratio-visual" style="aspect-ratio: 9/16; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                    <div class="ratio-visual"
+                        style="aspect-ratio: 9/16; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    </div>
                     <div style="font-weight: 600; margin-top: 8px;">9:16</div>
                     <div class="text-dim" style="font-size: 11px;">Вертикаль</div>
                 </button>
