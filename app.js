@@ -125,6 +125,13 @@ const app = {
         } else if (viewName === 'settings') {
             this.activePayments = []; // Reset to avoid duplicates before load
             this.loadActivePayments();
+
+            // Reset payment UI state
+            if (document.getElementById('start-payment-container')) {
+                document.getElementById('start-payment-container').classList.remove('hidden');
+                document.getElementById('payment-methods-section').classList.add('hidden');
+                document.getElementById('kaspi-payment-section').classList.add('hidden');
+            }
         }
     },
 
@@ -300,6 +307,20 @@ const app = {
     // ============================================
     // PAYMENT FUNCTIONS
     // ============================================
+
+    showPaymentMethods() {
+        document.getElementById('start-payment-container').classList.add('hidden');
+        document.getElementById('payment-methods-section').classList.remove('hidden');
+    },
+
+    selectPaymentMethod(method) {
+        if (method === 'kaspi') {
+            document.getElementById('payment-methods-section').classList.add('hidden');
+            document.getElementById('kaspi-payment-section').classList.remove('hidden');
+        } else {
+            alert('Данный метод оплаты временно недоступен. Пожалуйста, используйте Kaspi.');
+        }
+    },
 
     selectedPackage: null,
 
