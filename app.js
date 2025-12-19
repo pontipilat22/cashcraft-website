@@ -583,18 +583,24 @@ const app = {
     },
 
     async createPayment() {
+        console.log('=== createPayment called ==='); // Debug
+        console.log('User:', this.state.user); // Debug
+        console.log('Selected package:', this.selectedPackage); // Debug
+
         if (!this.state.user) {
             alert('Пожалуйста, войдите в систему');
             return;
         }
 
         if (!this.selectedPackage) {
-            alert('Выберите пакет');
+            alert('Сначала выберите пакет кристаллов выше');
             return;
         }
 
         const kaspiPhone = document.getElementById('kaspi-phone').value.trim();
         const kaspiName = document.getElementById('kaspi-name').value.trim();
+
+        console.log('Phone:', kaspiPhone, 'Name:', kaspiName); // Debug
 
         if (!kaspiPhone) {
             alert('Введите номер телефона Kaspi');
@@ -606,7 +612,14 @@ const app = {
             return;
         }
 
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = 'Отправка...';
+
         try {
+            console.log('Sending request to:', `${API_URL}/payments/create`); // Debug
+
             const response = await fetch(`${API_URL}/payments/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -619,7 +632,9 @@ const app = {
                 })
             });
 
+            console.log('Response status:', response.status); // Debug
             const data = await response.json();
+            console.log('Response data:', data); // Debug
 
             if (data.success) {
                 alert('✅ Запрос отправлен!\n\nАдминистратор вышлет счет на указанный номер Kaspi.\nПосле оплаты кристаллы будут автоматически зачислены.');
@@ -636,10 +651,15 @@ const app = {
                 });
 
                 this.loadActivePayments();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
             }
         } catch (error) {
             console.error('Error creating payment:', error);
-            alert('Ошибка создания запроса');
+            alert('Ошибка создания запроса: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = originalText;
         }
     },
 

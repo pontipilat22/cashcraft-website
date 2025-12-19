@@ -398,21 +398,27 @@
                         <h3>Оформление пополнения</h3>
                         <p class="text-dim" style="margin-bottom: 20px;">Пакет: <span id="selected-package"></span></p>
 
-                        <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Номер телефона Kaspi</label>
-                        <input type="tel" id="kaspi-phone" placeholder="+7 (___) ___-__-__"
-                            style="width: 100%; padding: 12px; margin-bottom: 15px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
+                        <div style="margin-bottom: 15px;">
+                            <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Номер телефона Kaspi</label>
+                            <input type="tel" id="kaspi-phone" placeholder="+7 (___) ___-__-__"
+                                style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); margin-bottom: 0;">
+                        </div>
 
-                        <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Имя в Kaspi (как подписано)</label>
-                        <input type="text" id="kaspi-name" placeholder="Например: Диана З."
-                            style="width: 100%; padding: 12px; margin-bottom: 20px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
+                        <div style="margin-bottom: 20px;">
+                            <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Имя в Kaspi (как подписано)</label>
+                            <input type="text" id="kaspi-name" placeholder="Например: Диана З."
+                                style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); margin-bottom: 0;">
+                        </div>
 
-                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
-                            <p class="text-dim" style="font-size: 0.85rem; line-height: 1.5;">
+                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+                            <p class="text-dim" style="font-size: 0.85rem; line-height: 1.5; margin: 0;">
                                 💡 После отправки запроса администратор вышлет счет на указанный номер Kaspi. Вам придет уведомление для оплаты.
                             </p>
                         </div>
 
-                        <button class="btn btn-primary" onclick="app.createPayment()">Отправить запрос</button>
+                        <button class="btn btn-primary" onclick="app.createPayment()" style="cursor: pointer; user-select: none;">
+                            Отправить запрос
+                        </button>
                     </div>
                 </div>
 
