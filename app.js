@@ -443,11 +443,12 @@ async function handleGoogleSignIn(response) {
             app.showMainApp();
             app.loadUserGenerations();
         } else {
-            alert('Ошибка авторизации');
+            console.error('Auth failed:', data);
+            alert('Ошибка авторизации: ' + (data.error || 'Неизвестная ошибка'));
         }
     } catch (error) {
         console.error('Sign-in error:', error);
-        alert('Ошибка при входе');
+        alert('Ошибка при входе: ' + error.message);
     }
 }
 

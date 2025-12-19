@@ -16,9 +16,14 @@ const PORT = process.env.PORT || 3000;
 // Google OAuth Client
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+const path = require('path');
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the parent directory (frontend)
+app.use(express.static(path.join(__dirname, '../')));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -370,6 +375,11 @@ app.post('/api/admin/payments/:id/reject', async (req, res) => {
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
+});
+
+// Serve index.html for any other requests (frontend)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 // Start server
