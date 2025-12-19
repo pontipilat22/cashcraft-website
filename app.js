@@ -598,6 +598,39 @@ const app = {
         document.getElementById('modal-confirm').classList.remove('open');
     },
 
+    // Show aspect ratio modal
+    showRatioModal() {
+        document.getElementById('modal-ratio').classList.add('open');
+    },
+
+    // Select aspect ratio and update UI
+    selectRatio(ratio) {
+        this.state.selectedRatio = ratio;
+
+        // Update icon aspect ratio
+        const icon = document.getElementById('ratio-icon');
+        const label = document.getElementById('ratio-label');
+
+        const ratioMap = {
+            '2:3': { aspect: '2/3', label: '2:3', description: 'Портрет' },
+            '1:1': { aspect: '1/1', label: '1:1', description: 'Квадрат' },
+            '16:9': { aspect: '16/9', label: '16:9', description: 'Широкий' },
+            '9:16': { aspect: '9/16', label: '9:16', description: 'Вертикальный' }
+        };
+
+        if (icon && ratioMap[ratio]) {
+            icon.style.aspectRatio = ratioMap[ratio].aspect;
+            label.textContent = ratioMap[ratio].label;
+        }
+
+        this.closeRatioModal();
+    },
+
+    // Close ratio modal
+    closeRatioModal() {
+        document.getElementById('modal-ratio').classList.remove('open');
+    },
+
     // ============================================
     // PAYMENT FUNCTIONS
     // ============================================

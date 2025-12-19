@@ -126,25 +126,23 @@
                 </div>
 
                 <!-- Prompt Input -->
-                <div class="card">
-                    <textarea id="generation-prompt" rows="4" placeholder="Опишите образ (например: киберпанк самурай в неоновом городе)..."></textarea>
-                    <p class="text-dim" style="font-size: 0.75rem; margin-top: 5px;">✨ Промпт будет автоматически улучшен AI</p>
+                <div class="card" style="padding: 15px;">
+                    <textarea id="generation-prompt" rows="3" placeholder="Опишите образ..." style="margin-bottom: 8px; font-size: 15px;"></textarea>
+                    <p class="text-dim" style="font-size: 0.7rem; margin: 0 0 12px 0;">✨ Промпт улучшится автоматически</p>
 
-                    <!-- Aspect Ratio Selection -->
-                    <div style="margin: 15px 0;">
-                        <label class="text-dim" style="font-size: 0.8rem; display: block; margin-bottom: 5px;">Соотношение сторон</label>
-                        <div class="aspect-ratios">
-                            <button class="ratio-btn active" data-ratio="2:3">2:3 Портрет</button>
-                            <button class="ratio-btn" data-ratio="1:1">1:1 Квадрат</button>
-                            <button class="ratio-btn" data-ratio="16:9">16:9 Широкий</button>
-                            <button class="ratio-btn" data-ratio="9:16">9:16 Вертикаль</button>
-                        </div>
-                    </div>
+                    <!-- Compact Settings Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <!-- Aspect Ratio Button -->
+                        <button class="settings-btn" onclick="app.showRatioModal()" style="justify-content: space-between; padding: 10px 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div id="ratio-icon"></div>
+                                <span id="ratio-label" style="font-size: 13px; font-weight: 500;">2:3</span>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-dim);">▼</span>
+                        </button>
 
-                    <!-- Photo Count Selection -->
-                    <div style="margin: 15px 0;">
-                        <label class="text-dim" style="font-size: 0.8rem; display: block; margin-bottom: 8px;">Количество фотографий</label>
-                        <select id="photo-count-select" onchange="app.updatePhotoCount()" style="margin-bottom: 0;">
+                        <!-- Photo Count Select -->
+                        <select id="photo-count-select" onchange="app.updatePhotoCount()" style="margin-bottom: 0; padding: 10px 12px; font-size: 13px; background: var(--bg-input); border: 1px solid var(--border-color);">
                             <option value="1">1 фото</option>
                             <option value="2">2 фото</option>
                             <option value="3">3 фото</option>
@@ -156,8 +154,8 @@
                         </select>
                     </div>
 
-                    <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()">
-                        Сгенерировать <span id="generation-cost">4 фото — 8 💎</span>
+                    <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()" style="padding: 14px; font-size: 15px;">
+                        <span id="generation-cost">4 фото — 8 💎</span>
                     </button>
                 </div>
 
@@ -501,7 +499,7 @@
         </nav>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL: Confirm Delete -->
     <div id="modal-confirm" class="modal-overlay">
         <div class="modal-box">
             <h3>Вы уверены?</h3>
@@ -510,6 +508,45 @@
                 <button class="btn btn-secondary" onclick="app.closeModal()">Отмена</button>
                 <button class="btn btn-danger" onclick="alert('Аккаунт удален'); app.closeModal()">Удалить</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Aspect Ratio Selection -->
+    <div id="modal-ratio" class="modal-overlay" onclick="app.closeRatioModal()">
+        <div class="modal-box" style="max-width: 400px;" onclick="event.stopPropagation()">
+            <h3 style="margin-bottom: 20px;">Выберите формат</h3>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <!-- 2:3 Portrait -->
+                <button class="ratio-option" onclick="app.selectRatio('2:3')" data-ratio="2:3">
+                    <div class="ratio-visual" style="aspect-ratio: 2/3; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    <div style="font-weight: 600; margin-top: 8px;">2:3</div>
+                    <div class="text-dim" style="font-size: 11px;">Портрет</div>
+                </button>
+
+                <!-- 1:1 Square -->
+                <button class="ratio-option" onclick="app.selectRatio('1:1')" data-ratio="1:1">
+                    <div class="ratio-visual" style="aspect-ratio: 1/1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    <div style="font-weight: 600; margin-top: 8px;">1:1</div>
+                    <div class="text-dim" style="font-size: 11px;">Квадрат</div>
+                </button>
+
+                <!-- 16:9 Landscape -->
+                <button class="ratio-option" onclick="app.selectRatio('16:9')" data-ratio="16:9">
+                    <div class="ratio-visual" style="aspect-ratio: 16/9; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                    <div style="font-weight: 600; margin-top: 8px;">16:9</div>
+                    <div class="text-dim" style="font-size: 11px;">Широкий</div>
+                </button>
+
+                <!-- 9:16 Vertical -->
+                <button class="ratio-option" onclick="app.selectRatio('9:16')" data-ratio="9:16">
+                    <div class="ratio-visual" style="aspect-ratio: 9/16; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                    <div style="font-weight: 600; margin-top: 8px;">9:16</div>
+                    <div class="text-dim" style="font-size: 11px;">Вертикаль</div>
+                </button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="app.closeRatioModal()" style="margin-top: 20px;">Закрыть</button>
         </div>
     </div>
 
