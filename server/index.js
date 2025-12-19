@@ -377,6 +377,11 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
 });
 
+// Serve admin.html
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../admin.html'));
+});
+
 // Serve index.html for any other requests (frontend)
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../index.html'));
