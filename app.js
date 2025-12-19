@@ -114,9 +114,16 @@ const app = {
         this.state.currentView = viewName;
 
         // Load data for specific views
+        if (viewName === 'buy-crystals') {
+            this.nav('settings');
+            return;
+        }
+
+        // Load data for specific views
         if (viewName === 'gallery') {
             this.loadUserGenerations();
-        } else if (viewName === 'buy-crystals') {
+        } else if (viewName === 'settings') {
+            this.activePayments = []; // Reset to avoid duplicates before load
             this.loadActivePayments();
         }
     },
