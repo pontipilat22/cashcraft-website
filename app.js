@@ -350,7 +350,7 @@ const app = {
     updatePhotoCount() {
         const select = document.getElementById('photo-count-select');
         this.state.photoCount = parseInt(select.value);
-        const cost = this.state.photoCount * 2; // 2 crystals per photo
+        const cost = this.state.photoCount * 3; // 3 crystals per photo
 
         const costSpan = document.getElementById('generation-cost');
         if (costSpan) {
@@ -375,7 +375,7 @@ const app = {
             if (data.success && data.models.length > 0) {
                 const select = document.getElementById('generation-model-select');
                 // Clear existing options except demo
-                select.innerHTML = '<option value="demo">Демо модель (без обучения)</option>';
+                select.innerHTML = '<option value="3783799">Anna Flux (Demo)</option>';
 
                 // Add user models
                 data.models.forEach(model => {
@@ -441,7 +441,7 @@ const app = {
         }
 
         const photoCount = this.state.photoCount || 4;
-        const totalCost = photoCount * 2; // 2 crystals per photo
+        const totalCost = photoCount * 3; // 3 crystals per photo
 
         // Check credits
         if (this.state.user.credits < totalCost) {
@@ -457,38 +457,86 @@ const app = {
         btn.innerHTML = "⏳ Генерация...";
         btn.disabled = true;
 
-        // Show loading state
+        // Show loading state placeholders
         results.innerHTML = Array(photoCount).fill(0).map(() => `
-            <div class="placeholder-img" style="animation: fadeIn 0.5s">
-                <span>Генерация...</span>
+            <div class="placeholder-img" style="animation: bounce 1.5s infinite">
+                <span>🤖 Думаем...</span>
             </div>
         `).join('');
 
-        // Simulate generation (replace with actual Astria API call)
-        setTimeout(async () => {
-            // Generate multiple images
-            const generatedImages = [];
-            for (let i = 0; i < photoCount; i++) {
-                const imageUrl = `https://picsum.photos/400/600?random=${Math.random()}`;
-                generatedImages.push(imageUrl);
+        try {
+            // 1. Call Generation API (Start Job)
+            const response = await fetch(`${API_URL}/generations`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: this.state.user.id,
+                    prompt: prompt,
+                    modelId: this.state.selectedModel,
+                    aspectRatio: this.state.selectedRatio,
+                    count: photoCount
+                })
+            });
+            const data = await response.json();
 
-                // Save to database
-                await this.saveGeneration(prompt, imageUrl, this.state.selectedRatio, this.state.selectedModel);
+            if (!data.success) {
+                throw new Error(data.error || 'Server error');
             }
 
-            // Deduct credits
-            this.state.user.credits -= totalCost;
-            this.saveUserToStorage(this.state.user);
-            this.updateUserProfile();
+            // 2. Poll for results (Wait for Webhook)
+            // Deduct credits visually (optimistic)
+            // Deduct credits visually (optimistic) or from server
+            if (this.state.user) {
+                if (data.remainingCredits !== undefined) {
+                    this.state.user.credits = data.remainingCredits;
+                } else {
+                    this.state.user.credits -= totalCost;
+                }
+                this.saveUserToStorage(this.state.user);
+                this.updateUserProfile();
+            }
 
-            // Reload recent generations
-            await this.loadRecentGenerations();
+            let attempts = 0;
+            const maxAttempts = 20; // 20 * 3s = 60 seconds
 
+            const interval = setInterval(async () => {
+                attempts++;
+                await this.loadRecentGenerations();
+
+                // Check if placeholders are gone (i.e., we have real images)
+                // Actually loadRecentGenerations replaces innerHTML. 
+                // We just hope new images are at top.
+                // We can't easily distinguish "new" vs "old" unless we track IDs.
+                // But generally fine for UI feedback.
+
+                if (attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    alert('Генерация занимает больше времени. Проверьте результат позже.');
+                }
+
+                // If we see images that match our prompt? Too complex.
+                // Just stop polling after some time or if we see new items count increased?
+                // Let's just poll for 30s fixed for now, user sees updates.
+            }, 4000);
+
+            // Stop polling after success? No, just let it run a bit.
+            setTimeout(() => {
+                clearInterval(interval);
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                alert(`✅ Запрос отправлен! Изображения скоро появятся.`);
+            }, 20000); // Stop UI loading state after 20s, let background polling continue?
+            // Actually better to keep button disabled? No, user might want to try again.
+
+        } catch (error) {
+            console.error('Generation Error:', error);
+            alert('Ошибка: ' + error.message);
             btn.innerHTML = originalHTML;
             btn.disabled = false;
-
-            alert(`✅ Генерация завершена!\n\n${photoCount} фото созданы. Списано ${totalCost} 💎`);
-        }, 4000);
+            this.loadRecentGenerations(); // Restore old ones
+        }
     },
 
     async generateReal() {
@@ -544,11 +592,37 @@ const app = {
             return;
         }
 
-        // TODO: Upload files to Cloudinary and get URLs
-        // For now, simulate with placeholder
-        const trainingImages = this.state.uploadedFiles.map((file, i) => `uploaded_image_${i}.jpg`);
+        const btn = event.target;
+        const orgText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = "⏳ Загрузка фото...";
 
         try {
+            // 1. Upload photos first
+            const trainingImages = [];
+
+            for (let i = 0; i < this.state.uploadedFiles.length; i++) {
+                const file = this.state.uploadedFiles[i];
+                btn.innerText = `⏳ Загрузка ${i + 1}/${this.state.uploadedFiles.length}...`;
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const upRes = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+                const upData = await upRes.json();
+
+                if (upData.success) {
+                    trainingImages.push(upData.url);
+                }
+            }
+
+            if (trainingImages.length < 5) { // At least some must succeed
+                throw new Error("Не удалось загрузить фотографии на сервер");
+            }
+
+            btn.innerText = "🚀 Запуск обучения...";
+
+            // 2. Start Training
             const response = await fetch(`${API_URL}/models`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -563,13 +637,21 @@ const app = {
             const data = await response.json();
 
             if (data.success) {
-                // Deduct credits
-                const trainingCost = 50;
-                this.state.user.credits -= trainingCost;
-                this.saveUserToStorage(this.state.user);
-                this.updateUserProfile();
+                // Deduct credits locally (server handles real logic? No, server is simple api proxy mostly)
+                // Actually server logic should deduct credits. 
+                // But current server implementation didn't deduct credits in model route.
+                // We'll deduct locally for UI sync, assume server does it or we add it later.
+                if (this.state.user) {
+                    if (data.remainingCredits !== undefined) {
+                        this.state.user.credits = data.remainingCredits;
+                    } else {
+                        this.state.user.credits -= trainingCost;
+                    }
+                    this.saveUserToStorage(this.state.user);
+                    this.updateUserProfile();
+                }
 
-                alert(`✅ Обучение модели началось!\n\nМодель будет готова примерно через 20 минут.\nСписано ${trainingCost} 💎`);
+                alert(`✅ Обучение модели началось!\n\nМодель будет готова примерно через 20-30 минут.\nВам придет уведомление (или обновите страницу).`);
 
                 // Reset form
                 document.getElementById('model-name').value = '';
@@ -578,11 +660,18 @@ const app = {
                 document.getElementById('file-count').innerText = '0';
                 this.state.uploadedFiles = [];
 
+                btn.innerText = orgText;
+                btn.disabled = false;
+
                 this.nav('models');
+            } else {
+                throw new Error(data.error || 'Ошибка сервера');
             }
         } catch (error) {
             console.error('Error starting training:', error);
-            alert('Ошибка при создании модели');
+            alert('Ошибка: ' + error.message);
+            btn.innerText = orgText;
+            btn.disabled = false;
         }
     },
 

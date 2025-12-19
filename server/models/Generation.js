@@ -14,6 +14,14 @@ const generationSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    astriaId: {
+        type: Number
+    },
+    status: {
+        type: String,
+        enum: ['processing', 'completed', 'failed'],
+        default: 'processing'
+    },
     aspectRatio: {
         type: String,
         default: '2:3'

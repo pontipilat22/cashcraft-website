@@ -23,6 +23,9 @@ const modelSchema = new mongoose.Schema({
     trainingImages: [{
         type: String
     }],
+    astriaId: {
+        type: Number // Astria uses ID like 123456
+    },
     thumbnailUrl: {
         type: String
     },

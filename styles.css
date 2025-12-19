@@ -563,6 +563,18 @@ textarea:focus {
     }
 }
 
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
 /* Media Queries */
 @media (max-width: 767px) {
     /* Улучшенная адаптивность для мобильных */
@@ -718,6 +730,7 @@ textarea:focus {
 }
 
 @media (min-width: 1024px) {
+
     /* Большие экраны */
     .image-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
