@@ -17,7 +17,7 @@
 
     --radius-md: 12px;
     --radius-lg: 18px;
-    --nav-height: 64px;
+    --nav-height: 60px;
 }
 
 * {
@@ -277,13 +277,14 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    font-size: 9px;
-    padding: 4px 2px;
+    gap: 1px;
+    font-size: 7.5px;
+    padding: 3px 2px;
     min-width: 0;
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .nav-item span {
@@ -291,6 +292,7 @@ textarea:focus {
     text-overflow: ellipsis;
     max-width: 100%;
     display: block;
+    line-height: 1.2;
 }
 
 .nav-item.active {
@@ -298,8 +300,8 @@ textarea:focus {
 }
 
 .nav-item svg {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     stroke: currentColor;
     fill: none;
     stroke-width: 2;
@@ -310,7 +312,7 @@ textarea:focus {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    padding-bottom: 80px;
+    padding-bottom: 70px;
     position: relative;
 }
 
@@ -683,7 +685,7 @@ textarea:focus {
     /* Main content padding */
     .main-content {
         padding: 15px;
-        padding-bottom: 80px;
+        padding-bottom: 70px;
     }
 }
 
@@ -748,5 +750,16 @@ textarea:focus {
     .btn {
         font-size: 0.9rem;
         padding: 12px 16px;
+    }
+
+    /* Extra small navigation */
+    .nav-item {
+        font-size: 6.5px;
+        padding: 3px 1px;
+    }
+
+    .nav-item svg {
+        width: 24px;
+        height: 24px;
     }
 }
