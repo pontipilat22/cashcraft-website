@@ -10,13 +10,15 @@ const app = {
         selectedModel: 'demo',
         selectedRatio: '2:3',
         selectedGender: 'man',
-        uploadedFiles: []
+        uploadedFiles: [],
+        photoCount: 1
     },
 
     // Инициализация
     init() {
         console.log("App initialized");
         this.loadUserFromStorage();
+        this.startCreditRefresh(); // Start automatic credit refresh
     },
 
     // ============================================
@@ -84,6 +86,24 @@ const app = {
         if (settingsCredits) settingsCredits.textContent = this.state.user.credits || 120;
     },
 
+    // Refresh user credits from server
+    async refreshUserCredits() {
+        if (!this.state.user) return;
+
+        try {
+            const response = await fetch(`${API_URL}/user/${this.state.user.id}`);
+            const data = await response.json();
+
+            if (data.success) {
+                this.state.user.credits = data.user.credits;
+                this.saveUserToStorage(this.state.user);
+                this.updateUserProfile();
+            }
+        } catch (error) {
+            console.error('Error refreshing credits:', error);
+        }
+    },
+
     // Logout
     logout() {
         localStorage.removeItem('user');
@@ -128,10 +148,16 @@ const app = {
             this.loadUserModels();
             this.loadRecentGenerations();
             this.initRatioButtons();
+            // Set default photo count
+            this.state.photoCount = 4;
+            const select = document.getElementById('photo-count-select');
+            if (select) select.value = '4';
+            this.updatePhotoCount();
         } else if (viewName === 'gallery') {
             this.loadUserGenerations();
         } else if (viewName === 'settings') {
             this.activePayments = []; // Reset to avoid duplicates before load
+            this.refreshUserCredits(); // Refresh credits when opening settings
             this.loadActivePayments();
 
             // Reset payment UI state
@@ -141,6 +167,16 @@ const app = {
                 document.getElementById('kaspi-payment-section').classList.add('hidden');
             }
         }
+    },
+
+    // Start periodic credit refresh
+    startCreditRefresh() {
+        // Refresh credits every 30 seconds when user is logged in
+        setInterval(() => {
+            if (this.state.user) {
+                this.refreshUserCredits();
+            }
+        }, 30000);
     },
 
     // ============================================
@@ -310,6 +346,18 @@ const app = {
         });
     },
 
+    // Update photo count and cost
+    updatePhotoCount() {
+        const select = document.getElementById('photo-count-select');
+        this.state.photoCount = parseInt(select.value);
+        const cost = this.state.photoCount * 2; // 2 crystals per photo
+
+        const costSpan = document.getElementById('generation-cost');
+        if (costSpan) {
+            costSpan.textContent = `${this.state.photoCount} фото — ${cost} 💎`;
+        }
+    },
+
     // Update model selection
     updateModelSelection() {
         const select = document.getElementById('generation-model-select');
@@ -392,46 +440,55 @@ const app = {
             return;
         }
 
+        const photoCount = this.state.photoCount || 4;
+        const totalCost = photoCount * 2; // 2 crystals per photo
+
         // Check credits
-        if (this.state.user.credits < 10) {
-            alert('Недостаточно кредитов. Пополните баланс.');
+        if (this.state.user.credits < totalCost) {
+            alert(`Недостаточно кредитов. Нужно ${totalCost} 💎, у вас ${this.state.user.credits} 💎\n\nПополните баланс в разделе Профиль.`);
             this.nav('settings');
             return;
         }
 
         const results = document.getElementById('generation-results');
         const btn = event.target;
-        const originalText = btn.innerText;
+        const originalHTML = btn.innerHTML;
 
-        btn.innerText = "Генерация...";
+        btn.innerHTML = "⏳ Генерация...";
         btn.disabled = true;
 
         // Show loading state
-        results.innerHTML = `
+        results.innerHTML = Array(photoCount).fill(0).map(() => `
             <div class="placeholder-img" style="animation: fadeIn 0.5s">
                 <span>Генерация...</span>
             </div>
-        `;
+        `).join('');
 
         // Simulate generation (replace with actual Astria API call)
         setTimeout(async () => {
-            const imageUrl = `https://picsum.photos/400/600?random=${Math.random()}`;
+            // Generate multiple images
+            const generatedImages = [];
+            for (let i = 0; i < photoCount; i++) {
+                const imageUrl = `https://picsum.photos/400/600?random=${Math.random()}`;
+                generatedImages.push(imageUrl);
 
-            // Save to database
-            await this.saveGeneration(prompt, imageUrl, this.state.selectedRatio, this.state.selectedModel);
+                // Save to database
+                await this.saveGeneration(prompt, imageUrl, this.state.selectedRatio, this.state.selectedModel);
+            }
 
             // Deduct credits
-            this.state.user.credits -= 10;
+            this.state.user.credits -= totalCost;
+            this.saveUserToStorage(this.state.user);
             this.updateUserProfile();
 
             // Reload recent generations
             await this.loadRecentGenerations();
 
-            btn.innerText = originalText;
+            btn.innerHTML = originalHTML;
             btn.disabled = false;
 
-            alert('Генерация завершена! 🎉');
-        }, 3000);
+            alert(`✅ Генерация завершена!\n\n${photoCount} фото созданы. Списано ${totalCost} 💎`);
+        }, 4000);
     },
 
     async generateReal() {
@@ -476,13 +533,14 @@ const app = {
         }
 
         // Check credits
-        if (this.state.user.credits < 500) {
-            alert('Недостаточно кредитов. Пополните баланс.');
+        const trainingCost = 50; // 50 crystals for training
+        if (this.state.user.credits < trainingCost) {
+            alert(`Недостаточно кредитов. Нужно ${trainingCost} 💎, у вас ${this.state.user.credits} 💎\n\nПополните баланс в разделе Профиль.`);
             this.nav('settings');
             return;
         }
 
-        if (!confirm(`Начать обучение модели "${modelName}"?\nБудет списано 500 💎`)) {
+        if (!confirm(`Начать обучение модели "${modelName}"?\nБудет списано ${trainingCost} 💎`)) {
             return;
         }
 
@@ -506,10 +564,12 @@ const app = {
 
             if (data.success) {
                 // Deduct credits
-                this.state.user.credits -= 500;
+                const trainingCost = 50;
+                this.state.user.credits -= trainingCost;
+                this.saveUserToStorage(this.state.user);
                 this.updateUserProfile();
 
-                alert('✅ Обучение модели началось!\n\nМодель будет готова примерно через 20 минут.\nВы получите уведомление после завершения.');
+                alert(`✅ Обучение модели началось!\n\nМодель будет готова примерно через 20 минут.\nСписано ${trainingCost} 💎`);
 
                 // Reset form
                 document.getElementById('model-name').value = '';

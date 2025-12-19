@@ -141,7 +141,24 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-primary" onclick="app.generateImage()">Сгенерировать — 10 💎</button>
+                    <!-- Photo Count Selection -->
+                    <div style="margin: 15px 0;">
+                        <label class="text-dim" style="font-size: 0.8rem; display: block; margin-bottom: 8px;">Количество фотографий</label>
+                        <select id="photo-count-select" onchange="app.updatePhotoCount()" style="margin-bottom: 0;">
+                            <option value="1">1 фото</option>
+                            <option value="2">2 фото</option>
+                            <option value="3">3 фото</option>
+                            <option value="4" selected>4 фото</option>
+                            <option value="5">5 фото</option>
+                            <option value="6">6 фото</option>
+                            <option value="8">8 фото</option>
+                            <option value="10">10 фото</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()">
+                        Сгенерировать <span id="generation-cost">4 фото — 8 💎</span>
+                    </button>
                 </div>
 
                 <!-- Generated Images -->
@@ -216,7 +233,7 @@
                 </div>
 
                 <button class="btn btn-primary" onclick="app.startTraining()" id="train-btn" disabled>
-                    Обучить модель (≈20 мин) — 500 💎
+                    Обучить модель (≈20 мин) — 50 💎
                 </button>
                 <p class="text-dim" style="text-align: center; font-size: 0.8rem; margin-top: 10px;">
                     После обучения модель станет доступна для генерации
