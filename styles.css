@@ -502,6 +502,79 @@ textarea:focus {
 }
 
 /* Media Queries */
+@media (max-width: 767px) {
+    /* Улучшенная адаптивность для мобильных */
+
+    /* Aspect ratio buttons */
+    .aspect-ratios {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    /* Package cards на мобильных */
+    #packages-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .package-card {
+        padding: 20px !important;
+    }
+
+    /* Кнопки пола на мобильных */
+    [data-gender] {
+        font-size: 0.85rem;
+        padding: 12px 8px;
+    }
+
+    /* Card padding на мобильных */
+    .card {
+        padding: 16px;
+    }
+
+    /* Заголовки на мобильных */
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    h3 {
+        font-size: 1.1rem;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 14px 18px;
+        font-size: 0.95rem;
+    }
+
+    /* Image grid на мобильных */
+    .image-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    /* Photo preview grid */
+    #photo-preview {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px;
+    }
+
+    /* Select inputs */
+    select {
+        font-size: 16px;
+        padding: 14px;
+    }
+
+    /* Payment info */
+    .payment-info {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}
+
 @media (min-width: 768px) {
     .mobile-nav {
         display: none;
@@ -517,5 +590,51 @@ textarea:focus {
 
     .landing-content {
         margin: 0;
+    }
+
+    /* Photo preview на десктопе */
+    #photo-preview {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    /* Packages на десктопе */
+    #packages-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    /* Большие экраны */
+    .image-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Дополнительная адаптивность для очень маленьких экранов */
+@media (max-width: 380px) {
+    .aspect-ratios {
+        font-size: 0.8rem;
+    }
+
+    .ratio-btn {
+        padding: 8px 6px;
+    }
+
+    #photo-preview {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 12px 16px;
     }
 }

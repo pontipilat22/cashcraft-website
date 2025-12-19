@@ -10,6 +10,11 @@ const modelSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    gender: {
+        type: String,
+        enum: ['man', 'woman', 'person'],
+        default: 'person'
+    },
     status: {
         type: String,
         enum: ['processing', 'ready', 'failed'],

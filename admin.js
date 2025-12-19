@@ -101,43 +101,71 @@ const adminApp = {
             const user = payment.userId;
             const statusClass = `status-${payment.status}`;
             const statusText = {
-                'pending': 'Ожидает оплаты',
-                'paid': 'Оплачено',
+                'pending': 'Ожидает отправки счета',
+                'paid': 'Оплачено - требуется проверка',
                 'confirmed': 'Подтверждено',
                 'rejected': 'Отклонено'
             }[payment.status];
 
+            const createdDate = new Date(payment.createdAt);
+            const timeAgo = this.getTimeAgo(createdDate);
+
             return `
-                <div class="payment-card">
+                <div class="payment-card" style="${payment.status === 'pending' ? 'border-left: 4px solid #eab308;' : payment.status === 'paid' ? 'border-left: 4px solid #22c55e;' : ''}">
                     <div class="payment-header">
                         <div>
-                            <div style="font-weight: 600;">${user.name}</div>
+                            <div style="font-weight: 600; font-size: 16px;">${user.name}</div>
                             <div class="text-dim" style="font-size: 13px;">${user.email}</div>
                         </div>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
-                    <div class="payment-info">
+
+                    <div class="payment-info" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));">
                         <div>
-                            <div class="text-dim" style="font-size: 12px;">Сумма</div>
-                            <div style="font-weight: 600;">${payment.amount}₸</div>
+                            <div class="text-dim" style="font-size: 12px;">💰 Сумма</div>
+                            <div style="font-weight: 700; font-size: 18px; color: #22c55e;">${payment.amount}₸</div>
                         </div>
                         <div>
-                            <div class="text-dim" style="font-size: 12px;">Кристаллы</div>
-                            <div style="font-weight: 600;">💎 ${payment.crystals}</div>
+                            <div class="text-dim" style="font-size: 12px;">💎 Кристаллы</div>
+                            <div style="font-weight: 700; font-size: 18px;">${payment.crystals}</div>
                         </div>
                         <div>
-                            <div class="text-dim" style="font-size: 12px;">Kaspi номер</div>
+                            <div class="text-dim" style="font-size: 12px;">📱 Kaspi номер</div>
                             <div style="font-weight: 600;">${payment.kaspiPhone}</div>
                         </div>
                         <div>
-                            <div class="text-dim" style="font-size: 12px;">Дата</div>
-                            <div style="font-weight: 600;">${new Date(payment.createdAt).toLocaleDateString('ru')}</div>
+                            <div class="text-dim" style="font-size: 12px;">👤 Имя в Kaspi</div>
+                            <div style="font-weight: 600;">${payment.kaspiName || 'Не указано'}</div>
+                        </div>
+                        <div>
+                            <div class="text-dim" style="font-size: 12px;">🕒 Создан</div>
+                            <div style="font-weight: 600;">${timeAgo}</div>
                         </div>
                     </div>
-                    ${payment.status === 'paid' ? `
-                        <div class="payment-actions">
+
+                    ${payment.status === 'pending' ? `
+                        <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 8px; padding: 12px; margin-top: 15px;">
+                            <p class="text-dim" style="font-size: 13px; margin: 0;">
+                                ⚠️ <strong>Действие:</strong> Отправьте счет Kaspi на номер <strong>${payment.kaspiPhone}</strong> (имя: ${payment.kaspiName}) на сумму <strong>${payment.amount}₸</strong>
+                            </p>
+                        </div>
+                        <div class="payment-actions" style="margin-top: 15px;">
+                            <button class="btn btn-success" onclick="adminApp.markAsSent('${payment._id}')">
+                                📨 Счет отправлен (отметить как Paid)
+                            </button>
+                            <button class="btn btn-danger" onclick="adminApp.rejectPayment('${payment._id}')">
+                                ✗ Отклонить
+                            </button>
+                        </div>
+                    ` : payment.status === 'paid' ? `
+                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px; margin-top: 15px;">
+                            <p class="text-dim" style="font-size: 13px; margin: 0;">
+                                ✅ Клиент отметил платеж как оплаченный. Проверьте поступление средств.
+                            </p>
+                        </div>
+                        <div class="payment-actions" style="margin-top: 15px;">
                             <button class="btn btn-success" onclick="adminApp.confirmPayment('${payment._id}')">
-                                ✓ Подтвердить
+                                ✓ Подтвердить и зачислить кристаллы
                             </button>
                             <button class="btn btn-danger" onclick="adminApp.rejectPayment('${payment._id}')">
                                 ✗ Отклонить
@@ -147,6 +175,46 @@ const adminApp = {
                 </div>
             `;
         }).join('');
+    },
+
+    getTimeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        const intervals = {
+            'год': 31536000,
+            'месяц': 2592000,
+            'день': 86400,
+            'час': 3600,
+            'минуту': 60
+        };
+
+        for (const [name, seconds_interval] of Object.entries(intervals)) {
+            const interval = Math.floor(seconds / seconds_interval);
+            if (interval >= 1) {
+                return `${interval} ${name} назад`;
+            }
+        }
+        return 'только что';
+    },
+
+    async markAsSent(paymentId) {
+        if (!confirm('Вы отправили счет клиенту? Статус изменится на "Оплачено".')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/payments/${paymentId}/mark-paid`, {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Статус обновлен. Ожидайте подтверждения оплаты от клиента.');
+                this.loadStats();
+                this.loadPayments();
+            }
+        } catch (error) {
+            console.error('Error marking as sent:', error);
+            alert('Ошибка обновления статуса');
+        }
     },
 
     async confirmPayment(paymentId) {

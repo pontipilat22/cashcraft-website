@@ -3,10 +3,14 @@ const API_URL = 'https://www.ai-photo.kz/api'; // Change to your Railway URL in 
 
 const app = {
     state: {
-        currentView: 'demo',
+        currentView: 'generation',
         isLoggedIn: false,
         user: null,
-        generations: []
+        generations: [],
+        selectedModel: 'demo',
+        selectedRatio: '2:3',
+        selectedGender: 'man',
+        uploadedFiles: []
     },
 
     // Инициализация
@@ -105,7 +109,7 @@ const app = {
 
         // Обновить активный класс в меню
         document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-        const navIndex = ['demo', 'models', 'create', 'gallery', 'settings'].indexOf(viewName);
+        const navIndex = ['generation', 'models', 'create', 'gallery', 'settings'].indexOf(viewName);
         if (navIndex >= 0) {
             const navItems = document.querySelectorAll('.mobile-nav .nav-item');
             if (navItems[navIndex]) navItems[navIndex].classList.add('active');
@@ -120,7 +124,11 @@ const app = {
         }
 
         // Load data for specific views
-        if (viewName === 'gallery') {
+        if (viewName === 'generation') {
+            this.loadUserModels();
+            this.loadRecentGenerations();
+            this.initRatioButtons();
+        } else if (viewName === 'gallery') {
             this.loadUserGenerations();
         } else if (viewName === 'settings') {
             this.activePayments = []; // Reset to avoid duplicates before load
@@ -206,11 +214,80 @@ const app = {
     // FILE HANDLING
     // ============================================
 
+    selectGender(gender) {
+        this.state.selectedGender = gender;
+        // Update button states
+        document.querySelectorAll('[data-gender]').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-gender') === gender) {
+                btn.classList.add('active');
+            }
+        });
+    },
+
     handleFiles(input) {
         const countSpan = document.getElementById('file-count');
-        if (input.files) {
-            countSpan.innerText = input.files.length;
+        const previewDiv = document.getElementById('photo-preview');
+        const trainBtn = document.getElementById('train-btn');
+
+        if (!input.files) return;
+
+        this.state.uploadedFiles = Array.from(input.files);
+        countSpan.innerText = this.state.uploadedFiles.length;
+
+        // Enable/disable train button
+        if (this.state.uploadedFiles.length >= 10 && this.state.uploadedFiles.length <= 20) {
+            trainBtn.disabled = false;
+        } else {
+            trainBtn.disabled = true;
         }
+
+        // Show preview
+        previewDiv.innerHTML = '';
+        this.state.uploadedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.style.cssText = 'position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 2px solid var(--border-color);';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '×';
+                removeBtn.style.cssText = 'position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 18px; line-height: 1;';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.removeFile(index);
+                };
+
+                imgWrapper.appendChild(img);
+                imgWrapper.appendChild(removeBtn);
+                previewDiv.appendChild(imgWrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    },
+
+    removeFile(index) {
+        this.state.uploadedFiles.splice(index, 1);
+        const dt = new DataTransfer();
+        this.state.uploadedFiles.forEach(file => dt.items.add(file));
+        document.getElementById('file-input').files = dt.files;
+
+        // Update count and preview
+        document.getElementById('file-count').innerText = this.state.uploadedFiles.length;
+        const trainBtn = document.getElementById('train-btn');
+        if (this.state.uploadedFiles.length >= 10 && this.state.uploadedFiles.length <= 20) {
+            trainBtn.disabled = false;
+        } else {
+            trainBtn.disabled = true;
+        }
+
+        // Rebuild preview
+        const input = document.getElementById('file-input');
+        this.handleFiles(input);
     },
 
     // ============================================
@@ -221,41 +298,140 @@ const app = {
         this.nav('generator');
     },
 
-    async generateDemo() {
-        const results = document.getElementById('demo-results');
-        const textarea = document.querySelector('#view-demo textarea');
-        const prompt = textarea.value || 'AI generated portrait';
+    // Initialize ratio button handlers
+    initRatioButtons() {
+        const ratioButtons = document.querySelectorAll('.ratio-btn');
+        ratioButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                ratioButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.state.selectedRatio = btn.getAttribute('data-ratio');
+            });
+        });
+    },
+
+    // Update model selection
+    updateModelSelection() {
+        const select = document.getElementById('generation-model-select');
+        this.state.selectedModel = select.value;
+    },
+
+    // Load user models for selection
+    async loadUserModels() {
+        if (!this.state.user) return;
+
+        try {
+            const response = await fetch(`${API_URL}/models/${this.state.user.id}`);
+            const data = await response.json();
+
+            if (data.success && data.models.length > 0) {
+                const select = document.getElementById('generation-model-select');
+                // Clear existing options except demo
+                select.innerHTML = '<option value="demo">Демо модель (без обучения)</option>';
+
+                // Add user models
+                data.models.forEach(model => {
+                    if (model.status === 'ready') {
+                        const option = document.createElement('option');
+                        option.value = model._id;
+                        option.textContent = model.name;
+                        select.appendChild(option);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading models:', error);
+        }
+    },
+
+    // Load recent generations for display
+    async loadRecentGenerations() {
+        if (!this.state.user) return;
+
+        try {
+            const response = await fetch(`${API_URL}/generations/${this.state.user.id}`);
+            const data = await response.json();
+
+            if (data.success) {
+                this.displayRecentGenerations(data.generations.slice(0, 6));
+            }
+        } catch (error) {
+            console.error('Error loading generations:', error);
+        }
+    },
+
+    // Display recent generations
+    displayRecentGenerations(generations) {
+        const resultsDiv = document.getElementById('generation-results');
+        if (!resultsDiv) return;
+
+        if (generations.length === 0) {
+            resultsDiv.innerHTML = '<p class="text-dim">Здесь появятся ваши сгенерированные изображения</p>';
+            return;
+        }
+
+        resultsDiv.innerHTML = generations.map(gen => `
+            <div class="placeholder-img" style="animation: fadeIn 0.5s">
+                <img src="${gen.imageUrl}" alt="${gen.prompt}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        `).join('');
+    },
+
+    // Main generation function
+    async generateImage() {
+        if (!this.state.user) {
+            alert('Пожалуйста, войдите в систему');
+            return;
+        }
+
+        const textarea = document.getElementById('generation-prompt');
+        const prompt = textarea.value.trim();
+
+        if (!prompt) {
+            alert('Введите описание для генерации');
+            return;
+        }
+
+        // Check credits
+        if (this.state.user.credits < 10) {
+            alert('Недостаточно кредитов. Пополните баланс.');
+            this.nav('settings');
+            return;
+        }
+
+        const results = document.getElementById('generation-results');
+        const btn = event.target;
+        const originalText = btn.innerText;
+
+        btn.innerText = "Генерация...";
+        btn.disabled = true;
 
         // Show loading state
         results.innerHTML = `
             <div class="placeholder-img" style="animation: fadeIn 0.5s">
                 <span>Генерация...</span>
             </div>
-            <div class="placeholder-img" style="animation: fadeIn 0.5s">
-                <span>Генерация...</span>
-            </div>
         `;
 
-        // Simulate generation (replace with actual AI API call)
+        // Simulate generation (replace with actual Astria API call)
         setTimeout(async () => {
-            const img1 = `https://picsum.photos/200/300?random=${Math.random()}`;
-            const img2 = `https://picsum.photos/200/300?random=${Math.random()}`;
+            const imageUrl = `https://picsum.photos/400/600?random=${Math.random()}`;
 
-            results.innerHTML = `
-                <div class="placeholder-img" style="animation: fadeIn 0.5s">
-                    <img src="${img1}" style="width:100%; height:100%; object-fit:cover;">
-                </div>
-                <div class="placeholder-img" style="animation: fadeIn 0.5s">
-                    <img src="${img2}" style="width:100%; height:100%; object-fit:cover;">
-                </div>
-            `;
+            // Save to database
+            await this.saveGeneration(prompt, imageUrl, this.state.selectedRatio, this.state.selectedModel);
 
-            // Save to database if user is logged in
-            if (this.state.user) {
-                await this.saveGeneration(prompt, img1);
-                await this.saveGeneration(prompt, img2);
-            }
-        }, 2000);
+            // Deduct credits
+            this.state.user.credits -= 10;
+            this.updateUserProfile();
+
+            // Reload recent generations
+            await this.loadRecentGenerations();
+
+            btn.innerText = originalText;
+            btn.disabled = false;
+
+            alert('Генерация завершена! 🎉');
+        }, 3000);
     },
 
     async generateReal() {
@@ -288,8 +464,66 @@ const app = {
             return;
         }
 
-        alert('Началось создание модели! Мы пришлем уведомление через 20 минут.');
-        this.nav('models');
+        const modelName = document.getElementById('model-name').value.trim();
+        if (!modelName) {
+            alert('Введите название модели');
+            return;
+        }
+
+        if (this.state.uploadedFiles.length < 10 || this.state.uploadedFiles.length > 20) {
+            alert('Загрузите от 10 до 20 фотографий');
+            return;
+        }
+
+        // Check credits
+        if (this.state.user.credits < 500) {
+            alert('Недостаточно кредитов. Пополните баланс.');
+            this.nav('settings');
+            return;
+        }
+
+        if (!confirm(`Начать обучение модели "${modelName}"?\nБудет списано 500 💎`)) {
+            return;
+        }
+
+        // TODO: Upload files to Cloudinary and get URLs
+        // For now, simulate with placeholder
+        const trainingImages = this.state.uploadedFiles.map((file, i) => `uploaded_image_${i}.jpg`);
+
+        try {
+            const response = await fetch(`${API_URL}/models`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: this.state.user.id,
+                    name: modelName,
+                    gender: this.state.selectedGender,
+                    trainingImages
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Deduct credits
+                this.state.user.credits -= 500;
+                this.updateUserProfile();
+
+                alert('✅ Обучение модели началось!\n\nМодель будет готова примерно через 20 минут.\nВы получите уведомление после завершения.');
+
+                // Reset form
+                document.getElementById('model-name').value = '';
+                document.getElementById('file-input').value = '';
+                document.getElementById('photo-preview').innerHTML = '';
+                document.getElementById('file-count').innerText = '0';
+                this.state.uploadedFiles = [];
+
+                this.nav('models');
+            }
+        } catch (error) {
+            console.error('Error starting training:', error);
+            alert('Ошибка при создании модели');
+        }
     },
 
     // ============================================
@@ -324,10 +558,28 @@ const app = {
 
     selectedPackage: null,
 
-    selectPackage(crystals, amount) {
+    selectPackage(crystals, amount, element) {
         this.selectedPackage = { crystals, amount };
+
+        // Remove active class from all packages
+        document.querySelectorAll('.package-card').forEach(card => {
+            card.style.borderColor = 'var(--border-color)';
+            card.style.transform = 'scale(1)';
+            card.style.boxShadow = 'none';
+        });
+
+        // Add active styling to selected package
+        if (element) {
+            element.style.borderColor = '#fff';
+            element.style.transform = 'scale(1.05)';
+            element.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
+        }
+
         document.getElementById('selected-package').textContent = `💎 ${crystals} кристаллов за ${amount}₸`;
         document.getElementById('payment-form').classList.remove('hidden');
+
+        // Smooth scroll to payment form
+        document.getElementById('payment-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     },
 
     async createPayment() {
@@ -341,9 +593,16 @@ const app = {
             return;
         }
 
-        const kaspiPhone = document.getElementById('kaspi-phone').value;
+        const kaspiPhone = document.getElementById('kaspi-phone').value.trim();
+        const kaspiName = document.getElementById('kaspi-name').value.trim();
+
         if (!kaspiPhone) {
-            alert('Введите номер Kaspi');
+            alert('Введите номер телефона Kaspi');
+            return;
+        }
+
+        if (!kaspiName) {
+            alert('Введите имя, как оно указано в Kaspi');
             return;
         }
 
@@ -355,16 +614,27 @@ const app = {
                     userId: this.state.user.id,
                     amount: this.selectedPackage.amount,
                     crystals: this.selectedPackage.crystals,
-                    kaspiPhone
+                    kaspiPhone,
+                    kaspiName
                 })
             });
 
             const data = await response.json();
 
             if (data.success) {
-                alert('Запрос создан! Ожидайте счет от администратора на указанный номер Kaspi.');
+                alert('✅ Запрос отправлен!\n\nАдминистратор вышлет счет на указанный номер Kaspi.\nПосле оплаты кристаллы будут автоматически зачислены.');
                 document.getElementById('payment-form').classList.add('hidden');
                 document.getElementById('kaspi-phone').value = '';
+                document.getElementById('kaspi-name').value = '';
+                this.selectedPackage = null;
+
+                // Reset package selection
+                document.querySelectorAll('.package-card').forEach(card => {
+                    card.style.borderColor = 'var(--border-color)';
+                    card.style.transform = 'scale(1)';
+                    card.style.boxShadow = 'none';
+                });
+
                 this.loadActivePayments();
             }
         } catch (error) {
@@ -399,8 +669,13 @@ const app = {
 
         container.innerHTML = '<h3 style="margin-top: 30px;">Активные запросы</h3>' + activePayments.map(payment => {
             const statusText = {
-                'pending': 'Ожидает оплаты',
+                'pending': 'Ожидает отправки счета',
                 'paid': 'Ожидает подтверждения'
+            }[payment.status];
+
+            const statusColor = {
+                'pending': '#eab308',
+                'paid': '#22c55e'
             }[payment.status];
 
             return `
@@ -410,16 +685,23 @@ const app = {
                             <div style="font-weight: 600;">💎 ${payment.crystals} кристаллов</div>
                             <div class="text-dim" style="font-size: 13px;">${payment.amount}₸</div>
                         </div>
-                        <span style="padding: 4px 12px; background: #eab308; color: #000; border-radius: 12px; font-size: 12px; font-weight: 600;">${statusText}</span>
+                        <span style="padding: 4px 12px; background: ${statusColor}; color: ${payment.status === 'pending' ? '#000' : '#fff'}; border-radius: 12px; font-size: 12px; font-weight: 600;">${statusText}</span>
+                    </div>
+                    <div class="text-dim" style="font-size: 13px; margin-bottom: 5px;">
+                        <strong>Телефон:</strong> ${payment.kaspiPhone}
                     </div>
                     <div class="text-dim" style="font-size: 13px; margin-bottom: 10px;">
-                        Kaspi: ${payment.kaspiPhone}
+                        <strong>Имя:</strong> ${payment.kaspiName}
                     </div>
                     ${payment.status === 'pending' ? `
-                        <button class="btn btn-primary" onclick="app.markAsPaid('${payment._id}')">
-                            Я оплатил
+                        <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 8px; padding: 10px; margin-top: 10px;">
+                            <p class="text-dim" style="font-size: 12px;">⏳ Ожидайте, администратор вышлет счет на указанный номер Kaspi</p>
+                        </div>
+                    ` : `
+                        <button class="btn btn-primary" onclick="app.markAsPaid('${payment._id}')" disabled style="opacity: 0.6;">
+                            Оплачено (проверяется)
                         </button>
-                    ` : '<p class="text-dim" style="font-size: 13px;">Администратор проверяет платеж...</p>'}
+                    `}
                 </div>
             `;
         }).join('');

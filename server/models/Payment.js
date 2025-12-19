@@ -18,6 +18,10 @@ const paymentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    kaspiName: {
+        type: String,
+        required: true
+    },
     status: {
         type: String,
         enum: ['pending', 'paid', 'confirmed', 'rejected'],

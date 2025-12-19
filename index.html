@@ -99,7 +99,7 @@
                 <button class="btn btn-secondary" onclick="app.nav('create')">+ Новая модель</button>
                 <div style="height: 20px;"></div>
                 <button class="btn btn-ghost" style="justify-content: flex-start; color: var(--text-dim);"
-                    onclick="app.nav('demo')">Демо</button>
+                    onclick="app.nav('generation')">Генерация</button>
                 <button class="btn btn-ghost" style="justify-content: flex-start; color: var(--text-dim);"
                     onclick="app.nav('models')">Мои модели</button>
                 <button class="btn btn-ghost" style="justify-content: flex-start; color: var(--text-dim);"
@@ -112,25 +112,49 @@
         <!-- Content Area -->
         <main class="main-content">
 
-            <!-- VIEW: DEMO -->
-            <section id="view-demo" class="page-view">
-                <h1>Быстрый старт</h1>
-                <p class="text-dim">Попробуйте генерацию без создания модели.</p>
+            <!-- VIEW: GENERATION -->
+            <section id="view-generation" class="page-view">
+                <h1>Генерация</h1>
+                <p class="text-dim">Создавайте уникальные AI портреты с помощью ваших моделей.</p>
 
+                <!-- Model Selection -->
                 <div class="card">
-                    <textarea rows="3" placeholder="Опишите образ (например: киберпанк самурай)..."></textarea>
-                    <button class="btn btn-primary" onclick="app.generateDemo()">Сгенерировать</button>
+                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Выберите модель</label>
+                    <select id="generation-model-select" onchange="app.updateModelSelection()">
+                        <option value="demo">Демо модель (без обучения)</option>
+                    </select>
                 </div>
 
-                <div class="image-grid" id="demo-results">
-                    <div class="placeholder-img"><span>Result 1</span></div>
-                    <div class="placeholder-img"><span>Result 2</span></div>
+                <!-- Prompt Input -->
+                <div class="card">
+                    <textarea id="generation-prompt" rows="4" placeholder="Опишите образ (например: киберпанк самурай в неоновом городе)..."></textarea>
+                    <p class="text-dim" style="font-size: 0.75rem; margin-top: 5px;">✨ Промпт будет автоматически улучшен AI</p>
+
+                    <!-- Aspect Ratio Selection -->
+                    <div style="margin: 15px 0;">
+                        <label class="text-dim" style="font-size: 0.8rem; display: block; margin-bottom: 5px;">Соотношение сторон</label>
+                        <div class="aspect-ratios">
+                            <button class="ratio-btn active" data-ratio="2:3">2:3 Портрет</button>
+                            <button class="ratio-btn" data-ratio="1:1">1:1 Квадрат</button>
+                            <button class="ratio-btn" data-ratio="16:9">16:9 Широкий</button>
+                            <button class="ratio-btn" data-ratio="9:16">9:16 Вертикаль</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="app.generateImage()">Сгенерировать — 10 💎</button>
+                </div>
+
+                <!-- Generated Images -->
+                <div style="margin-top: 30px;">
+                    <h3 style="margin-bottom: 15px;">Результаты генерации</h3>
+                    <div class="image-grid" id="generation-results">
+                        <p class="text-dim">Здесь появятся ваши сгенерированные изображения</p>
+                    </div>
                 </div>
 
                 <div class="card" style="margin-top: 2rem; background: linear-gradient(145deg, #1a1a1a, #222);">
-                    <h3>Хотите своё лицо?</h3>
-                    <p class="text-dim" style="font-size: 0.9rem;">Обучите персональную модель для безлимитной
-                        генерации.</p>
+                    <h3>Хотите персонализированные портреты?</h3>
+                    <p class="text-dim" style="font-size: 0.9rem;">Обучите персональную модель для создания портретов с вашим лицом.</p>
                     <div class="flex gap-2">
                         <button class="btn btn-primary" onclick="app.nav('create')">Создать модель</button>
                         <button class="btn btn-secondary" onclick="app.nav('settings')">💎 Купить кристаллы</button>
@@ -141,25 +165,62 @@
             <!-- VIEW: CREATE MODEL -->
             <section id="view-create" class="page-view hidden">
                 <h1>Создание модели</h1>
-                <p class="text-dim">Загрузите 10-20 фото для обучения LoRA.</p>
+                <p class="text-dim">Обучите персональную LoRA модель для генерации портретов.</p>
 
+                <!-- Model Name -->
                 <div class="card">
-                    <ul class="text-dim" style="padding-left: 20px; font-size: 0.85rem; margin-bottom: 20px;">
-                        <li>Только одно лицо в кадре</li>
-                        <li>Разные ракурсы и освещение</li>
-                        <li>Без очков и головных уборов</li>
-                    </ul>
-
-                    <div class="upload-area" onclick="document.getElementById('file-input').click()">
-                        <div style="font-size: 2rem; margin-bottom: 10px;">☁️</div>
-                        <p>Нажмите для загрузки фото</p>
-                        <span class="text-dim">Выбрано: <span id="file-count">0</span>/20</span>
-                        <input type="file" id="file-input" multiple style="display: none;"
-                            onchange="app.handleFiles(this)">
-                    </div>
+                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Название модели</label>
+                    <input type="text" id="model-name" placeholder="Например: Мария Студия"
+                        style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
                 </div>
 
-                <button class="btn btn-primary" onclick="app.startTraining()">Обучить (20 мин) — 500 💎</button>
+                <!-- Gender Selection -->
+                <div class="card">
+                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 10px;">Укажите пол человека на фотографиях</label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <button class="ratio-btn active" data-gender="man" onclick="app.selectGender('man')">👨 Мужчина</button>
+                        <button class="ratio-btn" data-gender="woman" onclick="app.selectGender('woman')">👩 Женщина</button>
+                        <button class="ratio-btn" data-gender="person" onclick="app.selectGender('person')">🧑 Другое</button>
+                    </div>
+                    <p class="text-dim" style="font-size: 0.75rem; margin-top: 10px;">Это важно для правильной обработки AI моделью</p>
+                </div>
+
+                <!-- Photo Upload -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">Загрузите фотографии (10-20 штук)</h3>
+
+                    <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                        <h4 style="color: #ffc107; margin-bottom: 10px;">⚠️ Важные требования к фото:</h4>
+                        <ul class="text-dim" style="padding-left: 20px; font-size: 0.85rem; line-height: 1.6;">
+                            <li><strong>Одно лицо</strong> — на фото должен быть только один человек</li>
+                            <li><strong>Качество</strong> — четкие фото, без размытия</li>
+                            <li><strong>Разнообразие</strong> — разные ракурсы (анфас, профиль, 3/4)</li>
+                            <li><strong>Освещение</strong> — разное освещение (естественное, искусственное)</li>
+                            <li><strong>Выражения</strong> — разные эмоции и выражения лица</li>
+                            <li><strong>Фон</strong> — разные фоны (не только белый)</li>
+                            <li><strong>Избегайте</strong> — очков, головных уборов, закрытого лица</li>
+                            <li><strong>Минимум декора</strong> — меньше макияжа и аксессуаров</li>
+                        </ul>
+                    </div>
+
+                    <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">📸</div>
+                        <p style="font-weight: 600;">Нажмите для выбора фото</p>
+                        <span class="text-dim">Выбрано: <span id="file-count">0</span>/20</span>
+                        <input type="file" id="file-input" multiple accept="image/*" style="display: none;"
+                            onchange="app.handleFiles(this)">
+                    </div>
+
+                    <!-- Preview Area -->
+                    <div id="photo-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 15px;"></div>
+                </div>
+
+                <button class="btn btn-primary" onclick="app.startTraining()" id="train-btn" disabled>
+                    Обучить модель (≈20 мин) — 500 💎
+                </button>
+                <p class="text-dim" style="text-align: center; font-size: 0.8rem; margin-top: 10px;">
+                    После обучения модель станет доступна для генерации
+                </p>
             </section>
 
             <!-- VIEW: MY MODELS -->
@@ -283,8 +344,8 @@
                                 style="background: #f14635; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold;">
                                 K</div>
                             <div style="flex: 1;">
-                                <div style="font-weight: bold;">Kaspi</div>
-                                <div class="text-dim" style="font-size: 0.8rem;">Перевод по номеру</div>
+                                <div style="font-weight: bold;">Удаленная оплата Kaspi</div>
+                                <div class="text-dim" style="font-size: 0.8rem;">Оплата через Kaspi счет</div>
                             </div>
                             <div>➔</div>
                         </div>
@@ -304,35 +365,54 @@
 
                 <!-- 3. Kaspi Packages (Hidden by default) -->
                 <div id="kaspi-payment-section" class="hidden">
-                    <h3 style="margin-bottom: 20px;">Выберите пакет (Kaspi):</h3>
-                    <div
+                    <h3 style="margin-bottom: 20px;">Выберите пакет:</h3>
+                    <div id="packages-grid"
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                        <div class="card" style="text-align: center; cursor: pointer;"
-                            onclick="app.selectPackage(100, 3000)">
+                        <div class="card package-card" data-crystals="100" data-amount="3000" style="text-align: center; cursor: pointer; transition: all 0.3s;"
+                            onclick="app.selectPackage(100, 3000, event.currentTarget)">
                             <h2 style="font-size: 2rem; margin-bottom: 10px;">💎 100</h2>
                             <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 5px;">3000₸</p>
                             <p class="text-dim" style="font-size: 0.85rem;">Базовый</p>
                         </div>
-                        <div class="card" style="text-align: center; cursor: pointer; border-color: #fff;"
-                            onclick="app.selectPackage(200, 5500)">
+                        <div class="card package-card" data-crystals="200" data-amount="5500" style="text-align: center; cursor: pointer; transition: all 0.3s;"
+                            onclick="app.selectPackage(200, 5500, event.currentTarget)">
+                            <div style="position: relative;">
+                                <span style="position: absolute; top: -10px; right: -10px; background: #22c55e; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">ПОПУЛЯРНЫЙ</span>
+                            </div>
                             <h2 style="font-size: 2rem; margin-bottom: 10px;">💎 200</h2>
                             <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 5px;">5500₸</p>
-                            <p class="text-dim" style="font-size: 0.85rem;">Популярный</p>
+                            <p class="text-dim" style="font-size: 0.85rem;">Экономия 500₸</p>
                         </div>
-                        <div class="card" style="text-align: center; cursor: pointer;"
-                            onclick="app.selectPackage(500, 12000)">
+                        <div class="card package-card" data-crystals="500" data-amount="12000" style="text-align: center; cursor: pointer; transition: all 0.3s;"
+                            onclick="app.selectPackage(500, 12000, event.currentTarget)">
+                            <div style="position: relative;">
+                                <span style="position: absolute; top: -10px; right: -10px; background: #eab308; color: #000; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">ВЫГОДНЫЙ</span>
+                            </div>
                             <h2 style="font-size: 2rem; margin-bottom: 10px;">💎 500</h2>
                             <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 5px;">12000₸</p>
-                            <p class="text-dim" style="font-size: 0.85rem;">Выгодный</p>
+                            <p class="text-dim" style="font-size: 0.85rem;">Экономия 3000₸</p>
                         </div>
                     </div>
 
                     <div id="payment-form" class="card hidden">
                         <h3>Оформление пополнения</h3>
-                        <p class="text-dim">Пакет: <span id="selected-package"></span></p>
+                        <p class="text-dim" style="margin-bottom: 20px;">Пакет: <span id="selected-package"></span></p>
+
+                        <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Номер телефона Kaspi</label>
                         <input type="tel" id="kaspi-phone" placeholder="+7 (___) ___-__-__"
-                            style="width: 100%; padding: 12px; margin: 15px 0; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
-                        <button class="btn btn-primary" onclick="app.createPayment()">Создать запрос</button>
+                            style="width: 100%; padding: 12px; margin-bottom: 15px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
+
+                        <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Имя в Kaspi (как подписано)</label>
+                        <input type="text" id="kaspi-name" placeholder="Например: Диана З."
+                            style="width: 100%; padding: 12px; margin-bottom: 20px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
+
+                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                            <p class="text-dim" style="font-size: 0.85rem; line-height: 1.5;">
+                                💡 После отправки запроса администратор вышлет счет на указанный номер Kaspi. Вам придет уведомление для оплаты.
+                            </p>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="app.createPayment()">Отправить запрос</button>
                     </div>
                 </div>
 
@@ -354,11 +434,11 @@
 
         <!-- Mobile Navigation -->
         <nav class="mobile-nav">
-            <button class="nav-item active" onclick="app.nav('demo')">
+            <button class="nav-item active" onclick="app.nav('generation')">
                 <svg viewBox="0 0 24 24">
                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
                 </svg>
-                <span>Демо</span>
+                <span>Генерация</span>
             </button>
             <button class="nav-item" onclick="app.nav('models')">
                 <svg viewBox="0 0 24 24">
