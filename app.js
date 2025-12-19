@@ -1,5 +1,5 @@
 // API Configuration
-const API_URL = 'https://www.ai-photo.kz/'; // Change to your Railway URL in production
+const API_URL = 'https://www.ai-photo.kz/api'; // Change to your Railway URL in production
 
 const app = {
     state: {

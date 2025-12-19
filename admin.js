@@ -1,4 +1,4 @@
-const API_URL = 'https://www.ai-photo.kz/admin';
+const API_URL = 'https://www.ai-photo.kz/api';
 
 const adminApp = {
     admin: null,
