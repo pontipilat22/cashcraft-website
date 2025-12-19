@@ -197,13 +197,14 @@ app.post('/api/models', async (req, res) => {
 // Create payment request
 app.post('/api/payments/create', async (req, res) => {
     try {
-        const { userId, amount, crystals, kaspiPhone } = req.body;
+        const { userId, amount, crystals, kaspiPhone, kaspiName } = req.body;
 
         const payment = await Payment.create({
             userId,
             amount,
             crystals,
             kaspiPhone,
+            kaspiName,
             status: 'pending'
         });
 
