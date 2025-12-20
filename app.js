@@ -498,6 +498,9 @@ const app = {
 
     // Display recent generations
     displayRecentGenerations(generations) {
+        // Prevent clearing placeholders if we are currently generating
+        if (this.state.isGenerating) return;
+
         const resultsDiv = document.getElementById('generation-results');
         if (!resultsDiv) return;
 
@@ -547,13 +550,17 @@ const app = {
         const btn = event.target;
         const originalHTML = btn.innerHTML;
 
-        btn.innerHTML = "⏳ Генерация...";
-        btn.disabled = true;
+        this.state.isGenerating = true;
 
-        // Show loading state placeholders
+        // Show loading state placeholders with AI stars
         results.innerHTML = Array(photoCount).fill(0).map(() => `
-            <div class="placeholder-img" style="animation: bounce 1.5s infinite">
-                <span>🤖 Думаем...</span>
+            <div class="placeholder-img generating">
+                <div class="ai-stars">
+                    <svg class="ai-star-1" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+                    <svg class="ai-star-2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+                    <svg class="ai-star-3" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+                </div>
+                <div class="loading-text">Искусственный интеллект творит...</div>
             </div>
         `).join('');
 
@@ -597,24 +604,31 @@ const app = {
 
             const interval = setInterval(async () => {
                 attempts++;
-                await this.loadRecentGenerations();
+                const gens = await this.fetchRecentGenerations();
 
-                // Check if placeholders are gone (i.e., we have real images)
-                // Actually loadRecentGenerations replaces innerHTML. 
-                // We just hope new images are at top.
-                // We can't easily distinguish "new" vs "old" unless we track IDs.
-                // But generally fine for UI feedback.
+                // If we have new images, stop polling and show them
+                if (gens && gens.length > 0) {
+                    const firstGen = gens[0];
+                    const isNew = !this.state.lastGenerationId || firstGen._id !== this.state.lastGenerationId;
+
+                    if (isNew) {
+                        this.state.isGenerating = false;
+                        this.state.lastGenerationId = firstGen._id;
+                        clearInterval(interval);
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                        this.displayRecentGenerations(gens);
+                    }
+                }
 
                 if (attempts >= maxAttempts) {
+                    this.state.isGenerating = false;
                     clearInterval(interval);
                     btn.innerHTML = originalHTML;
                     btn.disabled = false;
+                    await this.loadRecentGenerations();
                     alert('Генерация занимает больше времени. Проверьте результат позже.');
                 }
-
-                // If we see images that match our prompt? Too complex.
-                // Just stop polling after some time or if we see new items count increased?
-                // Let's just poll for 30s fixed for now, user sees updates.
             }, 4000);
 
             // Stop polling after success? No, just let it run a bit.
