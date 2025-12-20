@@ -66,6 +66,7 @@ const adminApp = {
         document.getElementById('admin-dashboard').classList.remove('hidden');
         this.loadStats();
         this.loadPayments();
+        this.loadAdminTemplates();
     },
 
     async loadStats() {
@@ -432,7 +433,7 @@ const adminApp = {
     },
 
     async deleteTemplate(id) {
-        if (!confirm('Удалить этот шаблон?')) return;
+        if (!confirm('Вы уверены, что хотите удалить этот шаблон?')) return;
 
         try {
             const response = await fetch(`${API_URL}/templates/${id}`, { method: 'DELETE' });
@@ -442,6 +443,7 @@ const adminApp = {
             }
         } catch (error) {
             console.error('Error deleting template:', error);
+            alert('Ошибка при удалении');
         }
     },
 
