@@ -458,6 +458,17 @@ app.post('/api/models', async (req, res) => {
     } catch (error) {
         console.error('Training Error Detail:', JSON.stringify(error.response?.data || error.message, null, 2));
 
+        // Cleanup the created model if training failed to start
+        try {
+            const modelToClean = await Model.findOne({ userId, status: 'processing', astriaId: { $exists: false } }).sort({ createdAt: -1 });
+            if (modelToClean) {
+                await Model.findByIdAndDelete(modelToClean._id);
+                console.log('Ghost model deleted.');
+            }
+        } catch (cleanupErr) {
+            console.error('Cleanup Err:', cleanupErr.message);
+        }
+
         // Refund Credits on failure
         try {
             const user = await User.findById(req.body.userId);
@@ -710,6 +721,16 @@ app.patch('/api/templates/:id/hit', async (req, res) => {
         template.isHit = !template.isHit;
         await template.save();
         res.json({ success: true, template });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete model
+app.delete('/api/models/:id', async (req, res) => {
+    try {
+        await Model.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

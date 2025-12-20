@@ -446,7 +446,7 @@ const app = {
                             </div>
                             <div class="flex gap-2" style="margin-top: 15px;">
                                 <button class="btn btn-primary" ${model.status !== 'ready' ? 'disabled' : ''} onclick="app.openGenerator('${model._id}')">Генерировать</button>
-                                <button class="btn btn-secondary" style="width: auto;">⋮</button>
+                                <button class="btn btn-secondary" style="width: auto; color: var(--danger);" onclick="app.deleteModel('${model._id}', '${model.name}')">🗑</button>
                             </div>
                         `;
                         modelsList.appendChild(card);
@@ -457,6 +457,25 @@ const app = {
             }
         } catch (error) {
             console.error('Error loading models:', error);
+        }
+    },
+
+    async deleteModel(modelId, modelName) {
+        if (!confirm(`Вы уверены, что хотите удалить модель "${modelName}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/models/${modelId}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (data.success) {
+                this.loadUserModels();
+            } else {
+                alert('Ошибка при удалении: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Ошибка при удалении');
         }
     },
 
