@@ -9,6 +9,10 @@ const templateSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    category: {
+        type: String,
+        default: 'General'
+    },
     imageUrl: {
         type: String,
         required: true

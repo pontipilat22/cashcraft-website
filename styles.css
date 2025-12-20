@@ -850,3 +850,54 @@ textarea:focus {
         height: 24px;
     }
 }
+
+/* --- ШАБЛОНЫ И КАТЕГОРИИ --- */
+.category-section {
+    margin-bottom: 30px;
+}
+
+.template-category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
+}
+
+.template-item {
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.template-item:active {
+    transform: scale(0.96);
+}
+
+.hit-label {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ff4d4d;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255, 77, 77, 0.4);
+    z-index: 2;
+}
+
+#selected-template-preview {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

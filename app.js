@@ -11,7 +11,8 @@ const app = {
         selectedRatio: '2:3',
         selectedGender: 'man',
         uploadedFiles: [],
-        photoCount: 1
+        photoCount: 1,
+        selectedTemplateImageUrl: null
     },
 
     // Инициализация
@@ -568,7 +569,8 @@ const app = {
                     aspectRatio: this.state.selectedRatio,
                     count: photoCount,
                     superResolution: document.getElementById('toggle-super-res').checked,
-                    filmGrain: document.getElementById('toggle-film-grain').checked
+                    filmGrain: document.getElementById('toggle-film-grain').checked,
+                    templateImageUrl: this.state.selectedTemplateImageUrl
                 })
             });
             const data = await response.json();
@@ -680,33 +682,82 @@ const app = {
             return;
         }
 
-        grid.innerHTML = templates.map(tpl => `
-            <div class="template-item card ${tpl.isHit ? 'hit-card' : ''}" 
-                 onclick="app.selectTemplate('${tpl.prompt.replace(/'/g, "\\'")}')">
-                <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px; position: relative;">
-                    <img src="${tpl.imageUrl}" alt="${tpl.name}" style="width:100%; height:100%; object-fit:cover;">
-                    ${tpl.isHit ? '<span class="hit-label">ХИТ 🔥</span>' : ''}
+        // Group by category
+        const groups = {};
+        templates.forEach(tpl => {
+            const cat = tpl.category || 'Общие';
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(tpl);
+        });
+
+        let html = '';
+        for (const [category, items] of Object.entries(groups)) {
+            html += `
+                <div class="category-section" style="grid-column: 1/-1; margin-top: 20px; width: 100%;">
+                    <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: var(--primary);">
+                        <span>📁</span> ${category}
+                    </h3>
+                    <div class="template-category-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
+                        ${items.map(tpl => `
+                            <div class="template-item card ${tpl.isHit ? 'hit-card' : ''}" 
+                                 onclick="app.selectTemplate('${tpl.prompt.replace(/'/g, "\\'")}', '${tpl.imageUrl}')">
+                                <div style="aspect-ratio: 1/1; margin-bottom: 10px; position: relative; border-radius: 8px; overflow: hidden;">
+                                    <img src="${tpl.imageUrl}" alt="${tpl.name}" style="width:100%; height:100%; object-fit:cover;">
+                                    ${tpl.isHit ? '<span class="hit-label" style="position: absolute; top: 5px; right: 5px; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">ХИТ 🔥</span>' : ''}
+                                </div>
+                                <span style="font-size: 0.85rem; font-weight: 500; display: block; text-align: center;">${tpl.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
-                <span style="font-size: 0.85rem; font-weight: 500;">${tpl.name}</span>
-            </div>
-        `).join('');
+            `;
+        }
+        grid.innerHTML = html;
+        grid.style.display = 'block'; // Make sure grid container doesn't mess up layout
     },
 
-    selectTemplate(prompt) {
+    selectTemplate(prompt, imageUrl) {
         // Switch to generation view
         this.nav('generation');
 
         // Set prompt
-        const textarea = document.getElementById('generation-prompt');
+        const textarea = document.getElementById('generation-prompt') || document.querySelector('#view-generator textarea');
         if (textarea) {
             textarea.value = prompt;
-            // Trigger animation or feedback
-            textarea.style.borderColor = 'var(--accent-color)';
-            setTimeout(() => textarea.style.borderColor = '', 1000);
         }
 
-        // Scroll to prompt
+        this.state.selectedTemplateImageUrl = imageUrl;
+        this.updateSelectedTemplateUI();
+
+        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    updateSelectedTemplateUI() {
+        const previewContainer = document.getElementById('selected-template-preview');
+        if (!previewContainer) return;
+
+        if (this.state.selectedTemplateImageUrl) {
+            previewContainer.innerHTML = `
+                <div style="position: relative; width: 60px; height: 60px; border-radius: 8px; overflow: hidden; border: 2px solid var(--primary); flex-shrink: 0;">
+                    <img src="${this.state.selectedTemplateImageUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <button onclick="app.clearSelectedTemplate()" style="position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.7); color: white; border: none; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-bottom-left-radius: 4px;">✕</button>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: white;">Стиль выбран</div>
+                    <div style="font-size: 0.7rem; color: #888;">Изображение будет использовано как образец</div>
+                </div>
+            `;
+            previewContainer.classList.remove('hidden');
+        } else {
+            previewContainer.innerHTML = '';
+            previewContainer.classList.add('hidden');
+        }
+    },
+
+    clearSelectedTemplate() {
+        this.state.selectedTemplateImageUrl = null;
+        this.updateSelectedTemplateUI();
     },
 
     async startTraining() {

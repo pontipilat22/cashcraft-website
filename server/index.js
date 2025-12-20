@@ -251,7 +251,7 @@ app.post('/api/generations/cleanup-test-data', async (req, res) => {
 // Create new generation (Start)
 app.post('/api/generations', async (req, res) => {
     try {
-        const { userId, prompt, modelId, aspectRatio, count, superResolution, filmGrain } = req.body;
+        const { userId, prompt, modelId, aspectRatio, count, superResolution, filmGrain, templateImageUrl } = req.body;
         const photoCount = count || 4;
 
         if (modelId === 'demo') {
@@ -344,7 +344,8 @@ app.post('/api/generations', async (req, res) => {
                 num_images: Math.min(photoCount, 8),
                 callback: webhookUrl,
                 super_resolution: !!superResolution,
-                film_grain: !!filmGrain
+                film_grain: !!filmGrain,
+                input_image_url: templateImageUrl || undefined
             }
         };
 
@@ -704,8 +705,8 @@ app.get('/api/templates', async (req, res) => {
 // Create new template (Admin)
 app.post('/api/templates', async (req, res) => {
     try {
-        const { name, prompt, imageUrl, isHit } = req.body;
-        const template = await Template.create({ name, prompt, imageUrl: imageUrl || 'https://via.placeholder.com/300', isHit });
+        const { name, prompt, imageUrl, isHit, category } = req.body;
+        const template = await Template.create({ name, prompt, imageUrl: imageUrl || 'https://via.placeholder.com/300', isHit, category: category || 'General' });
         res.json({ success: true, template });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

@@ -352,6 +352,7 @@ const adminApp = {
                     <div class="template-name">
                         ${tpl.name}
                         ${tpl.isHit ? '<span class="badge-hit">ХИТ</span>' : ''}
+                        <div style="font-size: 0.7rem; color: #888;">📁 ${tpl.category || 'General'}</div>
                     </div>
                     <div class="template-prompt">${tpl.prompt}</div>
                     <div class="template-actions">
@@ -373,13 +374,14 @@ const adminApp = {
         const name = document.getElementById('tpl-name').value;
         const promptText = document.getElementById('tpl-prompt').value;
         const imageUrl = document.getElementById('tpl-image').value;
+        const category = document.getElementById('tpl-category').value;
         const isHit = document.getElementById('tpl-ishit').checked;
 
         try {
             const response = await fetch(`${API_URL}/templates`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, prompt: promptText, imageUrl, isHit })
+                body: JSON.stringify({ name, prompt: promptText, imageUrl, isHit, category })
             });
 
             const data = await response.json();
