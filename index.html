@@ -313,10 +313,44 @@
             <section id="view-gallery" class="page-view hidden">
                 <h1>Библиотека</h1>
                 <div class="image-grid">
-                    <div class="placeholder-img"><img src="https://picsum.photos/200/300?random=1" alt=""></div>
-                    <div class="placeholder-img"><img src="https://picsum.photos/200/300?random=2" alt=""></div>
-                    <div class="placeholder-img"><img src="https://picsum.photos/200/300?random=3" alt=""></div>
-                    <div class="placeholder-img"><img src="https://picsum.photos/200/300?random=4" alt=""></div>
+                    <p class="text-dim">Здесь появятся ваши сгенерированные изображения</p>
+                </div>
+            </section>
+
+            <!-- VIEW: TEMPLATES -->
+            <section id="view-templates" class="page-view hidden">
+                <h1>Шаблоны</h1>
+                <p class="text-dim">Выберите стиль для вашей генерации.</p>
+                <div class="image-grid" id="templates-grid">
+                    <!-- Будет заполнено через JS или статично -->
+                    <div class="template-item card"
+                        onclick="app.selectTemplate('Cyberpunk style, neon lights, futuristic city')">
+                        <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px;">
+                            <img src="https://picsum.photos/200/200?random=10" alt="Cyberpunk">
+                        </div>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Cyberpunk</span>
+                    </div>
+                    <div class="template-item card"
+                        onclick="app.selectTemplate('Professional business portrait, studio lighting, neutral background')">
+                        <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px;">
+                            <img src="https://picsum.photos/200/200?random=11" alt="Business">
+                        </div>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Бизнес</span>
+                    </div>
+                    <div class="template-item card"
+                        onclick="app.selectTemplate('Oil painting style, textured canvas, artistic brushstrokes')">
+                        <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px;">
+                            <img src="https://picsum.photos/200/200?random=12" alt="Oil Painting">
+                        </div>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Живопись</span>
+                    </div>
+                    <div class="template-item card"
+                        onclick="app.selectTemplate('Vintage 90s film photography, grainy, nostalgic colors')">
+                        <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px;">
+                            <img src="https://picsum.photos/200/200?random=13" alt="Vintage">
+                        </div>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Винтаж</span>
+                    </div>
                 </div>
             </section>
 
@@ -485,14 +519,11 @@
                 </svg>
                 <span>Модели</span>
             </button>
-            <button class="nav-item" onclick="app.nav('create')" style="color: var(--text-main);">
-                <div
-                    style="background: var(--text-main); padding: 12px; border-radius: 50%; margin-top: -20px; border: 2px solid var(--bg-sidebar); box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;">
-                        <line x1="12" y1="5" x2="12" y2="19" stroke="#000" stroke-width="3"></line>
-                        <line x1="5" y1="12" x2="19" y2="12" stroke="#000" stroke-width="3"></line>
-                    </svg>
-                </div>
+            <button class="nav-item" onclick="app.nav('templates')">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"></path>
+                </svg>
+                <span>Шаблоны</span>
             </button>
             <button class="nav-item" onclick="app.nav('gallery')">
                 <svg viewBox="0 0 24 24">

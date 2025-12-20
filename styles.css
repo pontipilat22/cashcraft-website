@@ -300,11 +300,26 @@ textarea:focus {
 }
 
 .nav-item svg {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     stroke: currentColor;
     fill: none;
     stroke-width: 2;
+}
+
+.template-item {
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    text-align: center;
+}
+
+.template-item:active {
+    transform: scale(0.95);
+}
+
+.template-item .placeholder-img {
+    margin-bottom: 8px;
+    border-radius: 12px;
 }
 
 /* Контентная область */

@@ -129,7 +129,7 @@ const app = {
 
         // Обновить активный класс в меню
         document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-        const navIndex = ['generation', 'models', 'create', 'gallery', 'settings'].indexOf(viewName);
+        const navIndex = ['generation', 'models', 'templates', 'gallery', 'settings'].indexOf(viewName);
         if (navIndex >= 0) {
             const navItems = document.querySelectorAll('.mobile-nav .nav-item');
             if (navItems[navIndex]) navItems[navIndex].classList.add('active');
@@ -908,7 +908,6 @@ const app = {
             `;
         }).join('');
     },
-
     async markAsPaid(paymentId) {
         if (!confirm('Вы уверены, что оплатили счет?')) return;
 
@@ -927,6 +926,14 @@ const app = {
             console.error('Error marking as paid:', error);
             alert('Ошибка');
         }
+    },
+
+    selectTemplate(prompt) {
+        document.getElementById('generation-prompt').value = prompt;
+        this.nav('generation');
+
+        // Scroll to textarea
+        document.getElementById('generation-prompt').scrollIntoView({ behavior: 'smooth' });
     }
 };
 
