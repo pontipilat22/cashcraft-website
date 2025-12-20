@@ -1139,16 +1139,7 @@ const app = {
             }
         } catch (error) {
             console.error('Error marking as paid:', error);
-            alert('Ошибка');
         }
-    },
-
-    selectTemplate(prompt) {
-        document.getElementById('generation-prompt').value = prompt;
-        this.nav('generation');
-
-        // Scroll to textarea
-        document.getElementById('generation-prompt').scrollIntoView({ behavior: 'smooth' });
     }
 };
 
