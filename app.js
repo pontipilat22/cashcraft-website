@@ -205,12 +205,17 @@ const app = {
         const gallery = document.querySelector('#view-gallery .image-grid');
         if (!gallery) return;
 
-        if (this.state.generations.length === 0) {
+        const filteredGens = this.state.generations.filter(gen => {
+            const url = gen.imageUrl.toLowerCase();
+            return !url.includes('picsum.photos') && !url.includes('unsplash.com');
+        });
+
+        if (filteredGens.length === 0) {
             gallery.innerHTML = '<p class="text-dim">У вас пока нет сгенерированных изображений</p>';
             return;
         }
 
-        gallery.innerHTML = this.state.generations.map(gen => `
+        gallery.innerHTML = filteredGens.map(gen => `
             <div class="placeholder-img">
                 <img src="${gen.imageUrl}" alt="${gen.prompt}">
             </div>
@@ -467,12 +472,17 @@ const app = {
         const resultsDiv = document.getElementById('generation-results');
         if (!resultsDiv) return;
 
-        if (generations.length === 0) {
+        const filteredGens = generations.filter(gen => {
+            const url = gen.imageUrl.toLowerCase();
+            return !url.includes('picsum.photos') && !url.includes('unsplash.com');
+        });
+
+        if (filteredGens.length === 0) {
             resultsDiv.innerHTML = '<p class="text-dim">Здесь появятся ваши сгенерированные изображения</p>';
             return;
         }
 
-        resultsDiv.innerHTML = generations.map(gen => `
+        resultsDiv.innerHTML = filteredGens.map(gen => `
             <div class="placeholder-img" style="animation: fadeIn 0.5s">
                 <img src="${gen.imageUrl}" alt="${gen.prompt}" style="width:100%; height:100%; object-fit:cover;">
             </div>

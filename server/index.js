@@ -126,11 +126,8 @@ app.post('/api/webhooks/astria', async (req, res) => {
 
         if (type === 'tune') {
             // Handle Model Training Completion
-            // Astria sends tune object. If ID matches or we trust modelId from query.
             const model = await Model.findById(modelId);
             if (model) {
-                // Check if failed or success? Astria usually only calls callback on success or error?
-                // We'll assume success if body has tune data.
                 model.status = 'ready';
                 model.completedAt = new Date();
                 await model.save();
@@ -141,8 +138,13 @@ app.post('/api/webhooks/astria', async (req, res) => {
             const images = req.body.images; // Array of image URLs
             if (images && Array.isArray(images)) {
                 // Fetch model to get name
-                const model = await Model.findById(modelId);
-                const modelName = model ? model.name : 'Unknown Model';
+                let modelName = 'Unknown Model';
+                if (modelId === '3783799') {
+                    modelName = 'Anna Flux (Demo)';
+                } else if (mongoose.Types.ObjectId.isValid(modelId)) {
+                    const model = await Model.findById(modelId);
+                    if (model) modelName = model.name;
+                }
 
                 for (const imgUrl of images) {
                     await Generation.create({
@@ -214,7 +216,7 @@ app.get('/api/generations/:userId', async (req, res) => {
 app.post('/api/generations/cleanup-test-data', async (req, res) => {
     try {
         const result = await Generation.deleteMany({
-            imageUrl: { $regex: /picsum\.photos/ }
+            imageUrl: { $regex: /picsum\.photos|unsplash\.com|random=/i }
         });
         res.json({ success: true, deletedCount: result.deletedCount });
     } catch (error) {
@@ -244,9 +246,21 @@ app.post('/api/generations', async (req, res) => {
         }
 
         // 2. Check Model
-        const model = await Model.findById(modelId);
-        if (!model || !model.astriaId) {
-            return res.status(404).json({ error: 'Model not trained or not found' });
+        let modelAstriaId = modelId;
+        let modelGender = 'woman';
+        let modelName = 'Anna Flux (Demo)';
+
+        if (modelId !== '3783799') {
+            if (!mongoose.Types.ObjectId.isValid(modelId)) {
+                return res.status(400).json({ error: 'Invalid Model ID format' });
+            }
+            const model = await Model.findById(modelId);
+            if (!model || !model.astriaId) {
+                return res.status(404).json({ error: 'Model not trained or not found' });
+            }
+            modelAstriaId = model.astriaId;
+            modelGender = model.gender || 'person';
+            modelName = model.name;
         }
 
         // 3. Deduct Credits
@@ -265,7 +279,7 @@ app.post('/api/generations', async (req, res) => {
 
         const promptPayload = {
             prompt: {
-                text: `ohwx ${model.gender} ${prompt}`, // Trigger word + class + prompt
+                text: `ohwx ${modelGender} ${prompt}`, // Trigger word + class + prompt
                 negative_prompt: "bad quality, blurry, distorted, ugly",
                 num_images: photoCount,
                 callback: webhookUrl,
@@ -275,7 +289,7 @@ app.post('/api/generations', async (req, res) => {
             }
         };
 
-        const response = await axios.post(`https://api.astria.ai/tunes/${model.astriaId}/prompts`, promptPayload, {
+        const response = await axios.post(`https://api.astria.ai/tunes/${modelAstriaId}/prompts`, promptPayload, {
             headers: { 'Authorization': `Bearer ${API_KEY}` }
         });
 
