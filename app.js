@@ -729,8 +729,9 @@ const app = {
 
         // Set prompt
         const textarea = document.getElementById('generation-prompt');
+        console.log('Template selecting:', { name, promptText, el }); // Debug info
         if (textarea) {
-            textarea.value = promptText;
+            textarea.value = promptText || '';
         }
 
         this.state.selectedTemplateImageUrl = imageUrl;
