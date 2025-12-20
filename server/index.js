@@ -274,12 +274,9 @@ app.post('/api/generations', async (req, res) => {
 
         const promptPayload = {
             prompt: {
-                text: `ohwx ${modelGender} ${prompt}`, // Trigger word + class + prompt
-                num_images: Math.min(photoCount, 8), // Astria limit is 8
-                callback: webhookUrl,
-                w: aspectRatio === '1:1' ? 1024 : aspectRatio === '16:9' ? 1344 : 832,
-                h: aspectRatio === '1:1' ? 1024 : aspectRatio === '16:9' ? 768 : 1216,
-                scheduler: 'flow_match' // Recommended for Flux 1
+                text: `ohwx ${modelGender} ${prompt}`,
+                num_images: Math.min(photoCount, 8),
+                callback: webhookUrl
             }
         };
 
@@ -294,9 +291,11 @@ app.post('/api/generations', async (req, res) => {
 
         res.json({ success: true, promptId: response.data.id, remainingCredits: user.credits });
     } catch (error) {
-        console.error('Generation Error:', error.response ? JSON.stringify(error.response.data) : error.message);
-        const errorDetail = error.response?.data?.error || error.response?.data?.message || error.message;
-        res.status(500).json({ success: false, error: 'Generation failed: ' + errorDetail });
+        console.error('Generation Error Detail:', error.response?.data);
+        const errorMsg = error.response?.data
+            ? JSON.stringify(error.response.data)
+            : error.message;
+        res.status(500).json({ success: false, error: 'Generation failed: ' + errorMsg });
     }
 });
 
