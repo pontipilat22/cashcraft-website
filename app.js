@@ -276,13 +276,18 @@ const app = {
         if (!input.files) return;
 
         this.state.uploadedFiles = Array.from(input.files);
+        console.log(`[Files] Selected: ${this.state.uploadedFiles.length} files`);
         countSpan.innerText = this.state.uploadedFiles.length;
 
         // Enable/disable train button
         if (this.state.uploadedFiles.length >= 10 && this.state.uploadedFiles.length <= 20) {
+            console.log(`[Files] Valid count. Enabling train button.`);
             trainBtn.disabled = false;
+            trainBtn.style.opacity = '1';
         } else {
+            console.log(`[Files] Invalid count (${this.state.uploadedFiles.length}). Button stays disabled.`);
             trainBtn.disabled = true;
+            trainBtn.style.opacity = '0.5';
         }
 
         // Show preview
@@ -712,7 +717,7 @@ const app = {
             return;
         }
 
-        const btn = event.target;
+        const btn = document.getElementById('train-btn');
         const orgText = btn.innerText;
         btn.disabled = true;
         btn.innerText = "⏳ Загрузка фото...";
