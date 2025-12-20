@@ -166,6 +166,8 @@ const app = {
                 document.getElementById('payment-methods-section').classList.add('hidden');
                 document.getElementById('kaspi-payment-section').classList.add('hidden');
             }
+        } else if (viewName === 'models') {
+            this.loadUserModels();
         } else if (viewName === 'templates') {
             this.loadTemplates();
         }
