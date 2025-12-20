@@ -35,7 +35,8 @@ const path = require('path');
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files from the parent directory (frontend)
 app.use(express.static(path.join(__dirname, '../')));
@@ -122,20 +123,29 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 app.post('/api/webhooks/astria', async (req, res) => {
     try {
         const { type, modelId, userId, aspectRatio } = req.query;
-        console.log(`Webhook received [${type}]:`, req.body);
+        console.log(`[Astria Webhook] Received type: ${type}`);
+        console.log(`[Astria Webhook] Query Params:`, req.query);
+        console.log(`[Astria Webhook] Body:`, JSON.stringify(req.body, null, 2));
 
         if (type === 'tune') {
             // Handle Model Training Completion
-            const model = await Model.findById(modelId);
-            if (model) {
-                model.status = 'ready';
-                model.completedAt = new Date();
-                await model.save();
-                console.log(`Model ${modelId} marked as ready.`);
+            if (mongoose.Types.ObjectId.isValid(modelId)) {
+                const model = await Model.findById(modelId);
+                if (model) {
+                    model.status = req.body.status === 'failed' ? 'failed' : 'ready';
+                    model.completedAt = new Date();
+                    await model.save();
+                    console.log(`Model ${modelId} marked as ${model.status}.`);
+                }
             }
         } else if (type === 'prompt') {
             // Handle Image Generation Completion
-            const images = req.body.images; // Array of image URLs
+            // Astria usually sends images in req.body.images OR req.body.prompt.images
+            let images = req.body.images;
+            if (!images && req.body.prompt && req.body.prompt.images) {
+                images = req.body.prompt.images;
+            }
+
             if (images && Array.isArray(images)) {
                 // Fetch model to get name
                 let modelName = 'Unknown Model';
@@ -146,18 +156,31 @@ app.post('/api/webhooks/astria', async (req, res) => {
                     if (model) modelName = model.name;
                 }
 
+                console.log(`Creating ${images.length} generations for user ${userId}...`);
+
                 for (const imgUrl of images) {
-                    await Generation.create({
-                        userId,
-                        prompt: req.body.prompt ? req.body.prompt.text : 'AI Generated',
-                        imageUrl: imgUrl,
-                        aspectRatio: aspectRatio || '2:3',
-                        modelName: modelName,
-                        status: 'completed',
-                        astriaId: req.body.id // Prompt ID
-                    });
+                    try {
+                        if (!mongoose.Types.ObjectId.isValid(userId)) {
+                            console.error(`[Astria Webhook] Invalid userId in query: ${userId}`);
+                            break;
+                        }
+
+                        await Generation.create({
+                            userId: userId,
+                            prompt: (req.body.prompt && req.body.prompt.text) ? req.body.prompt.text : 'AI Generated',
+                            imageUrl: imgUrl,
+                            aspectRatio: aspectRatio || '2:3',
+                            modelName: modelName,
+                            status: 'completed',
+                            astriaId: req.body.id || (req.body.prompt && req.body.prompt.id) || 0
+                        });
+                    } catch (genError) {
+                        console.error('[Astria Webhook] Error creating generation record:', genError.message);
+                    }
                 }
-                console.log(`${images.length} generations created for user ${userId}`);
+                console.log(`Success: ${images.length} generations processed.`);
+            } else {
+                console.warn('Webhook received but no images found in body.');
             }
         }
 
