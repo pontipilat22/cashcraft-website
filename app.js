@@ -166,6 +166,8 @@ const app = {
                 document.getElementById('payment-methods-section').classList.add('hidden');
                 document.getElementById('kaspi-payment-section').classList.add('hidden');
             }
+        } else if (viewName === 'templates') {
+            this.loadTemplates();
         }
     },
 
@@ -618,6 +620,65 @@ const app = {
             btn.innerText = originalText;
             btn.disabled = false;
         }, 1000);
+    },
+
+    // ============================================
+    // TEMPLATE FUNCTIONS
+    // ============================================
+
+    async loadTemplates() {
+        const grid = document.getElementById('templates-grid');
+        if (grid) grid.innerHTML = '<div class="placeholder-img" style="grid-column: 1/-1; animation: bounce 1.5s infinite"><span>🤖 Загрузка стилей...</span></div>';
+
+        try {
+            const response = await fetch(`${API_URL}/templates`);
+            const data = await response.json();
+
+            if (data.success) {
+                this.displayTemplates(data.templates);
+            }
+        } catch (error) {
+            console.error('Error loading templates:', error);
+            if (grid) grid.innerHTML = '<p class="text-dim">Ошибка загрузки шаблонов</p>';
+        }
+    },
+
+    displayTemplates(templates) {
+        const grid = document.getElementById('templates-grid');
+        if (!grid) return;
+
+        if (templates.length === 0) {
+            grid.innerHTML = '<p class="text-dim">Шаблонов пока нет. Администратор скоро их добавит!</p>';
+            return;
+        }
+
+        grid.innerHTML = templates.map(tpl => `
+            <div class="template-item card ${tpl.isHit ? 'hit-card' : ''}" 
+                 onclick="app.selectTemplate('${tpl.prompt.replace(/'/g, "\\'")}')">
+                <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px; position: relative;">
+                    <img src="${tpl.imageUrl}" alt="${tpl.name}" style="width:100%; height:100%; object-fit:cover;">
+                    ${tpl.isHit ? '<span class="hit-label">ХИТ 🔥</span>' : ''}
+                </div>
+                <span style="font-size: 0.85rem; font-weight: 500;">${tpl.name}</span>
+            </div>
+        `).join('');
+    },
+
+    selectTemplate(prompt) {
+        // Switch to generation view
+        this.nav('generation');
+
+        // Set prompt
+        const textarea = document.getElementById('generation-prompt');
+        if (textarea) {
+            textarea.value = prompt;
+            // Trigger animation or feedback
+            textarea.style.borderColor = 'var(--accent-color)';
+            setTimeout(() => textarea.style.borderColor = '', 1000);
+        }
+
+        // Scroll to prompt
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     async startTraining() {

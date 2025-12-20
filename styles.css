@@ -580,13 +580,44 @@ textarea:focus {
 
 @keyframes bounce {
 
-    0%,
-    100% {
-        transform: translateY(0);
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Template Hit Labels */
+.hit-card {
+    border: 2px solid var(--accent-color) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.hit-label {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
     }
 
     50% {
-        transform: translateY(-5px);
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
     }
 }
 

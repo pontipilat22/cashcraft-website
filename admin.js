@@ -18,6 +18,15 @@ const adminApp = {
             e.preventDefault();
             this.login();
         });
+
+        // Template form
+        const tplForm = document.getElementById('template-form');
+        if (tplForm) {
+            tplForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addTemplate();
+            });
+        }
     },
 
     async login() {
@@ -310,6 +319,105 @@ const adminApp = {
             this.loadPayments();
         } else if (tabName === 'users') {
             this.loadUsers();
+        } else if (tabName === 'templates') {
+            this.loadAdminTemplates();
+        }
+    },
+
+    async loadAdminTemplates() {
+        try {
+            const response = await fetch(`${API_URL}/templates`);
+            const data = await response.json();
+
+            if (data.success) {
+                this.displayAdminTemplates(data.templates);
+            }
+        } catch (error) {
+            console.error('Error loading templates:', error);
+        }
+    },
+
+    displayAdminTemplates(templates) {
+        const container = document.getElementById('templates-list');
+
+        if (templates.length === 0) {
+            container.innerHTML = '<p class="text-dim">Шаблонов пока нет</p>';
+            return;
+        }
+
+        container.innerHTML = templates.map(tpl => `
+            <div class="template-card ${tpl.isHit ? 'hit-card' : ''}">
+                <img src="${tpl.imageUrl}" class="template-preview" alt="${tpl.name}">
+                <div class="template-content">
+                    <div class="template-name">
+                        ${tpl.name}
+                        ${tpl.isHit ? '<span class="badge-hit">ХИТ</span>' : ''}
+                    </div>
+                    <div class="template-prompt">${tpl.prompt}</div>
+                    <div class="template-actions">
+                        <button class="btn ${tpl.isHit ? 'btn-secondary' : 'btn-success'}" 
+                                onclick="adminApp.toggleHit('${tpl._id}')" style="flex: 1; padding: 6px;">
+                            ${tpl.isHit ? 'Убрать хит' : 'В ХИТ 🔥'}
+                        </button>
+                        <button class="btn btn-danger" 
+                                onclick="adminApp.deleteTemplate('${tpl._id}')" style="padding: 6px;">
+                            Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    async addTemplate() {
+        const name = document.getElementById('tpl-name').value;
+        const promptText = document.getElementById('tpl-prompt').value;
+        const imageUrl = document.getElementById('tpl-image').value;
+        const isHit = document.getElementById('tpl-ishit').checked;
+
+        try {
+            const response = await fetch(`${API_URL}/templates`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, prompt: promptText, imageUrl, isHit })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Шаблон добавлен!');
+                document.getElementById('template-form').reset();
+                this.loadAdminTemplates();
+            }
+        } catch (error) {
+            console.error('Error adding template:', error);
+            alert('Ошибка добавления');
+        }
+    },
+
+    async toggleHit(id) {
+        try {
+            const response = await fetch(`${API_URL}/templates/${id}/hit`, { method: 'PATCH' });
+            const data = await response.json();
+            if (data.success) {
+                this.loadAdminTemplates();
+            }
+        } catch (error) {
+            console.error('Error toggling hit:', error);
+        }
+    },
+
+    async deleteTemplate(id) {
+        if (!confirm('Удалить этот шаблон?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/templates/${id}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (data.success) {
+                this.loadAdminTemplates();
+            }
+        } catch (error) {
+            console.error('Error deleting template:', error);
         }
     },
 

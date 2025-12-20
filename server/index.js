@@ -9,6 +9,7 @@ const Generation = require('./models/Generation');
 const Model = require('./models/Model');
 const Payment = require('./models/Payment');
 const Admin = require('./models/Admin');
+const Template = require('./models/Template');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -652,7 +653,56 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../index.html'));
 });
 
+// ============================================
+// TEMPLATE ROUTES (Styles)
+// ============================================
+
+// Get all templates (sorted by isHit then date)
+app.get('/api/templates', async (req, res) => {
+    try {
+        const templates = await Template.find().sort({ isHit: -1, createdAt: -1 });
+        res.json({ success: true, templates });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create new template (Admin)
+app.post('/api/templates', async (req, res) => {
+    try {
+        const { name, prompt, imageUrl, isHit } = req.body;
+        const template = await Template.create({ name, prompt, imageUrl: imageUrl || 'https://via.placeholder.com/300', isHit });
+        res.json({ success: true, template });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Toggle hit status (Admin)
+app.patch('/api/templates/:id/hit', async (req, res) => {
+    try {
+        const template = await Template.findById(req.params.id);
+        if (!template) return res.status(404).json({ error: 'Template not found' });
+
+        template.isHit = !template.isHit;
+        await template.save();
+        res.json({ success: true, template });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete template (Admin)
+app.delete('/api/templates/:id', async (req, res) => {
+    try {
+        await Template.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
