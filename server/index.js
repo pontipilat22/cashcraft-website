@@ -678,15 +678,6 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
 });
 
-// Serve admin.html
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, '../admin.html'));
-});
-
-// Serve index.html for any other requests (frontend)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../index.html'));
-});
 
 // ============================================
 // TEMPLATE ROUTES (Styles)
@@ -763,6 +754,16 @@ app.delete('/api/templates/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
+});
+
+// Serve admin.html
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../admin.html'));
+});
+
+// Serve index.html for any other requests (frontend)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 // Start server
