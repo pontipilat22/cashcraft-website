@@ -371,29 +371,51 @@ const adminApp = {
     },
 
     async addTemplate() {
+        const btn = event.target.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+
         const name = document.getElementById('tpl-name').value;
         const promptText = document.getElementById('tpl-prompt').value;
-        const imageUrl = document.getElementById('tpl-image').value;
+        const fileInput = document.getElementById('tpl-file');
         const category = document.getElementById('tpl-category').value;
         const isHit = document.getElementById('tpl-ishit').checked;
+
+        if (!fileInput.files[0]) {
+            alert('Пожалуйста, выберите изображение');
+            return;
+        }
+
+        btn.innerText = 'Загрузка...';
+        btn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('prompt', promptText);
+        formData.append('image', fileInput.files[0]);
+        formData.append('category', category);
+        formData.append('isHit', isHit);
 
         try {
             const response = await fetch(`${API_URL}/templates`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, prompt: promptText, imageUrl, isHit, category })
+                body: formData
             });
 
             const data = await response.json();
 
             if (data.success) {
-                alert('Шаблон добавлен!');
+                alert('Шаблон добавлен успешно!');
                 document.getElementById('template-form').reset();
                 this.loadAdminTemplates();
+            } else {
+                alert('Ошибка: ' + data.error);
             }
         } catch (error) {
             console.error('Error adding template:', error);
             alert('Ошибка добавления');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
         }
     },
 

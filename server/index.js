@@ -703,12 +703,30 @@ app.get('/api/templates', async (req, res) => {
 });
 
 // Create new template (Admin)
-app.post('/api/templates', async (req, res) => {
+app.post('/api/templates', upload.single('image'), async (req, res) => {
     try {
-        const { name, prompt, imageUrl, isHit, category } = req.body;
-        const template = await Template.create({ name, prompt, imageUrl: imageUrl || 'https://via.placeholder.com/300', isHit, category: category || 'General' });
+        let { name, prompt, imageUrl, isHit, category } = req.body;
+
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'templates',
+                width: 800,
+                crop: "limit"
+            });
+            imageUrl = result.secure_url;
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        }
+
+        const template = await Template.create({
+            name,
+            prompt,
+            imageUrl: imageUrl || 'https://via.placeholder.com/300',
+            isHit: isHit === 'true' || isHit === true,
+            category: category || 'General'
+        });
         res.json({ success: true, template });
     } catch (error) {
+        if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
         res.status(500).json({ success: false, error: error.message });
     }
 });
