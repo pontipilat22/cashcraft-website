@@ -268,24 +268,18 @@ app.post('/api/generations', async (req, res) => {
         await user.save();
 
         const API_KEY = process.env.ASTRIA_API_KEY;
-        const BASE_DOMAIN = process.env.BASE_DOMAIN;
-
-        // We create a "batch ID" or just pass user ID in webhook params to know who owns it
-        // But better: create Generation records NOW with status 'processing'
-        // Astria returns one prompt ID, webhooks returns list of images.
-        // We can pass a "custom_id" or similar if supported, or just use prompt ID.
+        const BASE_DOMAIN = process.env.BASE_DOMAIN || 'https://www.ai-photo.kz';
 
         const webhookUrl = `${BASE_DOMAIN}/api/webhooks/astria?type=prompt&userId=${userId}&modelId=${modelId}&aspectRatio=${aspectRatio}`;
 
         const promptPayload = {
             prompt: {
                 text: `ohwx ${modelGender} ${prompt}`, // Trigger word + class + prompt
-                negative_prompt: "bad quality, blurry, distorted, ugly",
-                num_images: photoCount,
+                num_images: Math.min(photoCount, 8), // Astria limit is 8
                 callback: webhookUrl,
                 w: aspectRatio === '1:1' ? 1024 : aspectRatio === '16:9' ? 1344 : 832,
-                h: aspectRatio === '1:1' ? 1024 : aspectRatio === '16:9' ? 768 : 1216
-                // Flux 1 native resolutions: 1024x1024 (1:1), 1344x768 (16:9), 832x1216 (2:3)
+                h: aspectRatio === '1:1' ? 1024 : aspectRatio === '16:9' ? 768 : 1216,
+                scheduler: 'flow_match' // Recommended for Flux 1
             }
         };
 
@@ -300,8 +294,9 @@ app.post('/api/generations', async (req, res) => {
 
         res.json({ success: true, promptId: response.data.id, remainingCredits: user.credits });
     } catch (error) {
-        console.error('Generation Error:', error.response ? error.response.data : error.message);
-        res.status(500).json({ success: false, error: 'Generation failed: ' + (error.response?.data?.error || error.message) });
+        console.error('Generation Error:', error.response ? JSON.stringify(error.response.data) : error.message);
+        const errorDetail = error.response?.data?.error || error.response?.data?.message || error.message;
+        res.status(500).json({ success: false, error: 'Generation failed: ' + errorDetail });
     }
 });
 
@@ -361,7 +356,7 @@ app.post('/api/models', async (req, res) => {
 
         // 2. Call Astria API to start training
         const API_KEY = process.env.ASTRIA_API_KEY;
-        const BASE_DOMAIN = process.env.BASE_DOMAIN; // e.g. https://myapp.railway.app
+        const BASE_DOMAIN = process.env.BASE_DOMAIN || 'https://www.ai-photo.kz';
         const WEBHOOK_URL = `${BASE_DOMAIN}/api/webhooks/astria?type=tune&modelId=${model._id}`;
 
         const tunePayload = {
