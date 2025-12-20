@@ -7,7 +7,7 @@ const app = {
         isLoggedIn: false,
         user: null,
         generations: [],
-        selectedModel: 'demo',
+        selectedModel: '3783799',
         selectedRatio: '2:3',
         selectedGender: 'man',
         uploadedFiles: [],
@@ -364,6 +364,30 @@ const app = {
         this.state.selectedModel = select.value;
     },
 
+    // Navigates to generation and selects a model
+    openGenerator(modelId) {
+        this.nav('generation');
+        const select = document.getElementById('generation-model-select');
+        if (select) {
+            // Find option with this value or text
+            let found = false;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === modelId || select.options[i].text === modelId) {
+                    select.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // If not found, try to select by ID directly if it's the demo
+                if (modelId === 'Anna Flux' || modelId === 'demo') {
+                    select.value = '3783799';
+                }
+            }
+            this.updateModelSelection();
+        }
+    },
+
     // Load user models for selection
     async loadUserModels() {
         if (!this.state.user) return;
@@ -372,20 +396,50 @@ const app = {
             const response = await fetch(`${API_URL}/models/${this.state.user.id}`);
             const data = await response.json();
 
-            if (data.success && data.models.length > 0) {
-                const select = document.getElementById('generation-model-select');
-                // Clear existing options except demo
-                select.innerHTML = '<option value="3783799">Anna Flux (Demo)</option>';
+            const select = document.getElementById('generation-model-select');
+            const modelsList = document.getElementById('user-models-list');
 
-                // Add user models
+            // Clear existing
+            if (select) select.innerHTML = '<option value="3783799">Anna Flux (Demo)</option>';
+            if (modelsList) modelsList.innerHTML = '';
+
+            if (data.success && data.models.length > 0) {
                 data.models.forEach(model => {
-                    if (model.status === 'ready') {
+                    // Add to select if ready
+                    if (model.status === 'ready' && select) {
                         const option = document.createElement('option');
                         option.value = model._id;
                         option.textContent = model.name;
                         select.appendChild(option);
                     }
+
+                    // Add to Models list view
+                    if (modelsList) {
+                        const statusColor = model.status === 'ready' ? '#22c55e' : '#eab308';
+                        const statusText = model.status === 'ready' ? 'Готова к работе' : 'В обработке...';
+
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3>${model.name}</h3>
+                                    <span style="color: ${statusColor}; font-size: 0.8rem;">● ${statusText}</span>
+                                </div>
+                                <div style="width: 40px; height: 40px; background: #333; border-radius: 50%; overflow: hidden;">
+                                    ${model.trainingImages && model.trainingImages[0] ? `<img src="${model.trainingImages[0]}" style="width:100%; height:100%; object-fit:cover;">` : ''}
+                                </div>
+                            </div>
+                            <div class="flex gap-2" style="margin-top: 15px;">
+                                <button class="btn btn-primary" ${model.status !== 'ready' ? 'disabled' : ''} onclick="app.openGenerator('${model._id}')">Генерировать</button>
+                                <button class="btn btn-secondary" style="width: auto;">⋮</button>
+                            </div>
+                        `;
+                        modelsList.appendChild(card);
+                    }
                 });
+            } else if (modelsList) {
+                modelsList.innerHTML = '<p class="text-dim">У вас пока нет созданных моделей</p>';
             }
         } catch (error) {
             console.error('Error loading models:', error);
@@ -554,7 +608,7 @@ const app = {
 
             // Save to database
             if (this.state.user) {
-                await this.saveGeneration(prompt, imageUrl, '2:3', 'Anna Flux');
+                await this.saveGeneration(prompt, imageUrl, '2:3', 'Anna Flux (Demo)');
             }
 
             btn.innerText = originalText;

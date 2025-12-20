@@ -122,7 +122,7 @@
                     <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 8px;">Выберите
                         модель</label>
                     <select id="generation-model-select" onchange="app.updateModelSelection()">
-                        <option value="demo">Демо модель (без обучения)</option>
+                        <option value="3783799">Anna Flux (Demo)</option>
                     </select>
                 </div>
 
@@ -262,22 +262,10 @@
                         onclick="app.nav('create')">+</button>
                 </div>
 
-                <!-- Model Card Active -->
-                <div class="card">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3>Anna Flux</h3>
-                            <span style="color: #22c55e; font-size: 0.8rem;">● Готова к работе</span>
-                        </div>
-                        <div style="width: 40px; height: 40px; background: #333; border-radius: 50%;"></div>
-                    </div>
-                    <div class="flex gap-2" style="margin-top: 15px;">
-                        <button class="btn btn-primary" onclick="app.openGenerator('Anna Flux')">Генерировать</button>
-                        <button class="btn btn-secondary" style="width: auto;">⋮</button>
-                    </div>
-                </div>
-
                 <!-- Model Card Processing -->
+                <div id="user-models-list">
+                    <p class="text-dim">Загрузка моделей...</p>
+                </div>
 
             </section>
 
@@ -286,8 +274,7 @@
                 <h1>Студия</h1>
 
                 <select id="model-select">
-                    <option>Anna Flux (v1)</option>
-                    <option>Cyber Style (v2)</option>
+                    <option value="3783799">Anna Flux (Demo)</option>
                 </select>
 
                 <div class="card">
@@ -322,32 +309,35 @@
                 <h1>Шаблоны</h1>
                 <p class="text-dim">Выберите стиль для вашей генерации.</p>
                 <div class="image-grid" id="templates-grid">
-                    <!-- Будет заполнено через JS или статично -->
                     <div class="template-item card"
-                        onclick="app.selectTemplate('Cyberpunk style, neon lights, futuristic city')">
+                        onclick="app.selectTemplate('Urban fashion style, casual outfit, urban background, cinematic lighting')">
                         <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px;">
-                            <img src="https://picsum.photos/200/200?random=10" alt="Cyberpunk">
+                            <img src="assets/photo_5343811950959332435_y.jpg" alt="Urban Fashion"
+                                style="width:100%; height:100%; object-fit:cover;">
                         </div>
-                        <span style="font-size: 0.85rem; font-weight: 500;">Cyberpunk</span>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Городской стиль</span>
                     </div>
                     <div class="template-item card"
-                        onclick="app.selectTemplate('Professional business portrait, studio lighting, neutral background')">
+                        onclick="app.selectTemplate('Professional business headshot, confident smile, studio lighting, neutral grey background')">
                         <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px;">
-                            <img src="https://picsum.photos/200/200?random=11" alt="Business">
+                            <img src="assets/photo_5343811950959332437_y.jpg" alt="Business"
+                                style="width:100%; height:100%; object-fit:cover;">
                         </div>
                         <span style="font-size: 0.85rem; font-weight: 500;">Бизнес</span>
                     </div>
                     <div class="template-item card"
-                        onclick="app.selectTemplate('Oil painting style, textured canvas, artistic brushstrokes')">
+                        onclick="app.selectTemplate('Fitness and sports lifestyle, athletic wear, outdoor morning lighting, energetic mood')">
                         <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px;">
-                            <img src="https://picsum.photos/200/200?random=12" alt="Oil Painting">
+                            <img src="assets/photo_5343811950959332433_y.jpg" alt="Sports"
+                                style="width:100%; height:100%; object-fit:cover;">
                         </div>
-                        <span style="font-size: 0.85rem; font-weight: 500;">Живопись</span>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Спорт</span>
                     </div>
                     <div class="template-item card"
-                        onclick="app.selectTemplate('Vintage 90s film photography, grainy, nostalgic colors')">
+                        onclick="app.selectTemplate('Vintage 90s film photography style, grainy texture, analog warm colors, nostalgic mood')">
                         <div class="placeholder-img" style="aspect-ratio: 1/1; margin-bottom: 10px;">
-                            <img src="https://picsum.photos/200/200?random=13" alt="Vintage">
+                            <img src="assets/photo_5343811950959332441_y.jpg" alt="Vintage"
+                                style="width:100%; height:100%; object-fit:cover;">
                         </div>
                         <span style="font-size: 0.85rem; font-weight: 500;">Винтаж</span>
                     </div>
