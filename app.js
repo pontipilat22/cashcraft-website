@@ -694,13 +694,15 @@ const app = {
         for (const [category, items] of Object.entries(groups)) {
             html += `
                 <div class="category-section" style="grid-column: 1/-1; margin-top: 20px; width: 100%;">
-                    <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: var(--primary);">
-                        <span>📁</span> ${category}
+                    <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: #fff; font-weight: 600;">
+                        ${category}
                     </h3>
                     <div class="template-category-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
                         ${items.map(tpl => `
                             <div class="template-item card ${tpl.isHit ? 'hit-card' : ''}" 
-                                 onclick="app.selectTemplate('${tpl.prompt.replace(/'/g, "\\'")}', '${tpl.imageUrl}')">
+                                 onclick="app.selectTemplate(this)"
+                                 data-prompt="${tpl.prompt.replace(/"/g, '&quot;')}"
+                                 data-image="${tpl.imageUrl}">
                                 <div style="aspect-ratio: 1/1; margin-bottom: 10px; position: relative; border-radius: 8px; overflow: hidden;">
                                     <img src="${tpl.imageUrl}" alt="${tpl.name}" style="width:100%; height:100%; object-fit:cover;">
                                     ${tpl.isHit ? '<span class="hit-label" style="position: absolute; top: 5px; right: 5px; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">ХИТ 🔥</span>' : ''}
@@ -716,7 +718,10 @@ const app = {
         grid.style.display = 'block'; // Make sure grid container doesn't mess up layout
     },
 
-    selectTemplate(prompt, imageUrl) {
+    selectTemplate(el) {
+        const prompt = el.getAttribute('data-prompt');
+        const imageUrl = el.getAttribute('data-image');
+
         // Switch to generation view
         this.nav('generation');
 
