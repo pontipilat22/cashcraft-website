@@ -438,6 +438,7 @@ app.post('/api/models', async (req, res) => {
         };
 
         console.log('Starting Astria training for:', model._id);
+        console.log('Images to train:', trainingImages.length);
 
         const response = await axios.post('https://api.astria.ai/tunes', tunePayload, {
             headers: {
@@ -445,6 +446,7 @@ app.post('/api/models', async (req, res) => {
                 'Content-Type': 'application/json'
             }
         });
+        console.log('Astria Response ID:', response.data.id);
 
         // 5. Update Model with Astria ID
         model.astriaId = response.data.id;

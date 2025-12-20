@@ -723,21 +723,32 @@ const app = {
 
             for (let i = 0; i < this.state.uploadedFiles.length; i++) {
                 const file = this.state.uploadedFiles[i];
-                btn.innerText = `⏳ Загрузка ${i + 1}/${this.state.uploadedFiles.length}...`;
+                const progressMsg = `⏳ Загрузка ${i + 1}/${this.state.uploadedFiles.length}...`;
+                btn.innerText = progressMsg;
+                console.log(`[Training] ${progressMsg}`);
 
                 const formData = new FormData();
                 formData.append('file', file);
 
-                const upRes = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
-                const upData = await upRes.json();
+                try {
+                    const upRes = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+                    const upData = await upRes.json();
 
-                if (upData.success) {
-                    trainingImages.push(upData.url);
+                    if (upData.success) {
+                        trainingImages.push(upData.url);
+                        console.log(`[Training] File ${i + 1} uploaded: ${upData.url}`);
+                    } else {
+                        console.error(`[Training] File ${i + 1} failed:`, upData.error);
+                    }
+                } catch (upErr) {
+                    console.error(`[Training] Upload error for file ${i + 1}:`, upErr);
                 }
             }
 
-            if (trainingImages.length < 5) { // At least some must succeed
-                throw new Error("Не удалось загрузить фотографии на сервер");
+            console.log(`[Training] Total uploaded images: ${trainingImages.length}`);
+
+            if (trainingImages.length < 10) {
+                throw new Error(`Удалось загрузить только ${trainingImages.length} фото из ${this.state.uploadedFiles.length}. Нужно минимум 10. Проверьте интернет.`);
             }
 
             btn.innerText = "🚀 Запуск обучения...";
