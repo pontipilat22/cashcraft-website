@@ -631,6 +631,16 @@ app.get('/api/admin/payments', async (req, res) => {
     }
 });
 
+// Delete payment (Permanently)
+app.delete('/api/admin/payments/:id', async (req, res) => {
+    try {
+        await Payment.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Confirm payment
 app.post('/api/admin/payments/:id/confirm', async (req, res) => {
     try {

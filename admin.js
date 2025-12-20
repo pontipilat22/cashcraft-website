@@ -181,7 +181,13 @@ const adminApp = {
                                 ✗ Отклонить
                             </button>
                         </div>
-                    ` : ''}
+                    ` : `
+                        <div class="payment-actions" style="margin-top: 15px;">
+                            <button class="btn btn-danger" style="opacity: 0.7; font-size: 11px;" onclick="adminApp.deletePayment('${payment._id}')">
+                                🗑 Удалить навсегда
+                            </button>
+                        </div>
+                    `}
                 </div>
             `;
         }).join('');
@@ -269,6 +275,27 @@ const adminApp = {
         } catch (error) {
             console.error('Error rejecting payment:', error);
             alert('Ошибка отклонения');
+        }
+    },
+
+    async deletePayment(paymentId) {
+        if (!confirm('!!! ВНИМАНИЕ !!!\nЭта запись о платеже будет удалена НАВСЕГДА.\nОтменить это действие нельзя.')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/admin/payments/${paymentId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Запись удалена');
+                this.loadStats();
+                this.loadPayments();
+            }
+        } catch (error) {
+            console.error('Error deleting payment:', error);
+            alert('Ошибка удаления');
         }
     },
 

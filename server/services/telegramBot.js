@@ -55,6 +55,10 @@ const initBot = () => {
         await sendNextPayment(chatId);
     });
 
+
+
+
+
     // --- ОБРАБОТКА КНОПОК ---
     bot.on('callback_query', async (query) => {
         const chatId = query.message.chat.id;
