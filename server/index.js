@@ -12,6 +12,10 @@ const Admin = require('./models/Admin');
 const Template = require('./models/Template');
 
 const app = express();
+const { initBot, notifyAdminNewPayment } = require('./services/telegramBot');
+
+// Init Bot
+initBot();
 const PORT = process.env.PORT || 3000;
 
 // Google OAuth Client
@@ -525,6 +529,9 @@ app.post('/api/payments/:id/mark-paid', async (req, res) => {
         payment.status = 'paid';
         payment.paidAt = new Date();
         await payment.save();
+
+        // Notify Admin via Telegram
+        notifyAdminNewPayment(payment);
 
         res.json({ success: true, payment });
     } catch (error) {
