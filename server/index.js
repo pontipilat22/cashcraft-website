@@ -251,7 +251,7 @@ app.post('/api/generations/cleanup-test-data', async (req, res) => {
 // Create new generation (Start)
 app.post('/api/generations', async (req, res) => {
     try {
-        const { userId, prompt, modelId, aspectRatio, count } = req.body;
+        const { userId, prompt, modelId, aspectRatio, count, superResolution, filmGrain } = req.body;
         const photoCount = count || 4;
 
         if (modelId === 'demo') {
@@ -342,7 +342,9 @@ app.post('/api/generations', async (req, res) => {
             prompt: {
                 text: `ohwx ${modelGender} ${enhancedPrompt}`,
                 num_images: Math.min(photoCount, 8),
-                callback: webhookUrl
+                callback: webhookUrl,
+                super_resolution: !!superResolution,
+                film_grain: !!filmGrain
             }
         };
 

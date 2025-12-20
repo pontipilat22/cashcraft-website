@@ -540,7 +540,9 @@ const app = {
                     prompt: prompt,
                     modelId: this.state.selectedModel,
                     aspectRatio: this.state.selectedRatio,
-                    count: photoCount
+                    count: photoCount,
+                    superResolution: document.getElementById('toggle-super-res').checked,
+                    filmGrain: document.getElementById('toggle-film-grain').checked
                 })
             });
             const data = await response.json();

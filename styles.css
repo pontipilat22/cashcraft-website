@@ -75,6 +75,34 @@ body {
     font-size: 0.9rem;
 }
 
+.quality-toggle {
+    display: flex;
+    align-items: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quality-toggle:hover {
+    border-color: var(--text-dim);
+    background: var(--bg-hover);
+}
+
+.quality-toggle input {
+    margin-right: 12px;
+    width: 20px;
+    height: 20px;
+    accent-color: #fff;
+}
+
+.toggle-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
 .text-center {
     text-align: center;
 }

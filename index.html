@@ -158,6 +158,18 @@
                         </select>
                     </div>
 
+                    <!-- Quality Settings -->
+                    <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label class="quality-toggle">
+                            <input type="checkbox" id="toggle-super-res">
+                            <span class="toggle-label">💎 HD Качество</span>
+                        </label>
+                        <label class="quality-toggle">
+                            <input type="checkbox" id="toggle-film-grain">
+                            <span class="toggle-label">🎬 Киноэффект</span>
+                        </label>
+                    </div>
+
                     <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()"
                         style="padding: 14px; font-size: 15px;">
                         <span id="generation-cost">4 фото — 8 💎</span>
