@@ -30,7 +30,11 @@
     <div id="admin-dashboard" class="hidden">
         <nav class="top-nav">
             <h2>📊 Админ-панель</h2>
-            <button class="btn btn-secondary" onclick="adminApp.logout()">Выход</button>
+            <div class="flex gap-2">
+                <button class="btn btn-danger" onclick="adminApp.cleanupTestData()"
+                    style="font-size: 0.8rem; padding: 6px 12px;">Очистить тест-данные</button>
+                <button class="btn btn-secondary" onclick="adminApp.logout()">Выход</button>
+            </div>
         </nav>
 
         <div class="container">

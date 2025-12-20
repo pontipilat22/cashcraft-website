@@ -210,6 +210,18 @@ app.get('/api/generations/:userId', async (req, res) => {
     }
 });
 
+// Cleanup test data (Picsum images)
+app.post('/api/generations/cleanup-test-data', async (req, res) => {
+    try {
+        const result = await Generation.deleteMany({
+            imageUrl: { $regex: /picsum\.photos/ }
+        });
+        res.json({ success: true, deletedCount: result.deletedCount });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Create new generation (Start)
 app.post('/api/generations', async (req, res) => {
     try {

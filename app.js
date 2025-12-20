@@ -602,19 +602,12 @@ const app = {
         btn.innerText = "Генерация...";
         btn.disabled = true;
 
-        // Simulate generation
-        setTimeout(async () => {
-            const imageUrl = `https://picsum.photos/200/300?random=${Math.random()}`;
-
-            // Save to database
-            if (this.state.user) {
-                await this.saveGeneration(prompt, imageUrl, '2:3', 'Anna Flux (Demo)');
-            }
-
+        // Simulation disabled - just show alert
+        setTimeout(() => {
+            alert('Эта функция (Studio) временно ограничена. Используйте вкладку "Генерация".');
             btn.innerText = originalText;
             btn.disabled = false;
-            this.nav('gallery');
-        }, 2000);
+        }, 1000);
     },
 
     async startTraining() {

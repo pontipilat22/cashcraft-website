@@ -296,7 +296,10 @@ const adminApp = {
     switchTab(tabName) {
         // Update tab buttons
         document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-        event.target.classList.add('active');
+        // Find the button that was clicked
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
 
         // Update tab content
         document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
@@ -307,6 +310,28 @@ const adminApp = {
             this.loadPayments();
         } else if (tabName === 'users') {
             this.loadUsers();
+        }
+    },
+
+    async cleanupTestData() {
+        if (!confirm('Вы уверены, что хотите НАВСЕГДА удалить все тестовые фотографии из базы данных?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/generations/cleanup-test-data`, {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(`Успешно удалено ${data.deletedCount} тестовых записей.`);
+                location.reload(); // Refresh to show empty gallery
+            } else {
+                alert('Ошибка при очистке: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Cleanup error:', error);
+            alert('Сетевая ошибка при очистке');
         }
     }
 };
