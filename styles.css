@@ -78,24 +78,31 @@ body {
 .quality-toggle {
     display: flex;
     align-items: center;
-    background: var(--bg-input);
+    justify-content: center;
+    background: transparent;
     border: 1px solid var(--border-color);
-    padding: 12px;
-    border-radius: 12px;
+    padding: 8px 12px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s;
+    user-select: none;
+}
+
+.quality-toggle:has(input:checked) {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .quality-toggle:hover {
-    border-color: var(--text-dim);
     background: var(--bg-hover);
 }
 
 .quality-toggle input {
-    margin-right: 12px;
-    width: 20px;
-    height: 20px;
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
     accent-color: #fff;
+    cursor: pointer;
 }
 
 .toggle-label {

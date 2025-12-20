@@ -115,7 +115,6 @@
             <!-- VIEW: GENERATION -->
             <section id="view-generation" class="page-view">
                 <h1>Генерация</h1>
-                <p class="text-dim">Создавайте уникальные AI портреты с помощью ваших моделей.</p>
 
                 <!-- Model Selection -->
                 <div class="card">
@@ -130,8 +129,11 @@
                 <div class="card" style="padding: 15px;">
                     <textarea id="generation-prompt" rows="3" placeholder="Опишите образ..."
                         style="margin-bottom: 8px; font-size: 15px;"></textarea>
-                    <p class="text-dim" style="font-size: 0.7rem; margin: 0 0 12px 0;">✨ Промпт улучшится автоматически
-                    </p>
+
+                    <!-- SELECTED TEMPLATE PREVIEW -->
+                    <div id="selected-template-preview" class="hidden"
+                        style="margin-bottom: 15px; display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+                    </div>
 
                     <!-- Compact Settings Row -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
@@ -160,13 +162,13 @@
 
                     <!-- Quality Settings -->
                     <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <label class="quality-toggle">
+                        <label class="quality-toggle" style="padding: 8px 12px; font-size: 0.8rem;">
                             <input type="checkbox" id="toggle-super-res">
-                            <span class="toggle-label">💎 HD Качество</span>
+                            <span>HD Качество</span>
                         </label>
-                        <label class="quality-toggle">
+                        <label class="quality-toggle" style="padding: 8px 12px; font-size: 0.8rem;">
                             <input type="checkbox" id="toggle-film-grain">
-                            <span class="toggle-label">🎬 Киноэффект</span>
+                            <span>Плёнка</span>
                         </label>
                     </div>
 
@@ -178,16 +180,16 @@
 
                 <!-- Generated Images -->
                 <div style="margin-top: 30px;">
-                    <h3 style="margin-bottom: 15px;">Результаты генерации</h3>
+                    <h3 style="margin-bottom: 12px; font-size: 1.1rem;">Результаты</h3>
                     <div class="image-grid" id="generation-results">
                         <p class="text-dim">Здесь появятся ваши сгенерированные изображения</p>
                     </div>
                 </div>
 
                 <div class="card" style="margin-top: 2rem; background: linear-gradient(145deg, #1a1a1a, #222);">
-                    <h3>Хотите персонализированные портреты?</h3>
-                    <p class="text-dim" style="font-size: 0.9rem;">Обучите персональную модель для создания портретов с
-                        вашим лицом.</p>
+                    <h3>Ваше лицо в AI</h3>
+                    <p class="text-dim" style="font-size: 0.85rem;">Обучите модель со своим лицом для персональных
+                        портретов.</p>
                     <div class="flex gap-2">
                         <button class="btn btn-primary" onclick="app.nav('create')">Создать модель</button>
                         <button class="btn btn-secondary" onclick="app.nav('settings')">💎 Купить кристаллы</button>
@@ -279,38 +281,6 @@
                     <p class="text-dim">Загрузка моделей...</p>
                 </div>
 
-            </section>
-
-            <!-- VIEW: GENERATOR (WITH MODEL) -->
-            <section id="view-generator" class="page-view hidden">
-                <h1>Студия</h1>
-
-                <select id="model-select">
-                    <option value="3783799">Anna Flux (Demo)</option>
-                </select>
-
-                <div class="card">
-                    <textarea rows="4" placeholder="Промпт (на русском или английском)..."></textarea>
-                    <p class="text-dim" style="font-size: 0.75rem; margin-top: 5px;">✨ Промпт будет автоматически
-                        улучшен AI</p>
-
-                    <!-- SELECTED TEMPLATE PREVIEW -->
-                    <div id="selected-template-preview" class="hidden"
-                        style="margin-top: 15px; display: flex; align-items: center; gap: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px;">
-                    </div>
-
-                    <div style="margin: 15px 0;">
-                        <label class="text-dim"
-                            style="font-size: 0.8rem; display: block; margin-bottom: 5px;">Формат</label>
-                        <div class="aspect-ratios">
-                            <button class="ratio-btn active">2:3</button>
-                            <button class="ratio-btn">1:1</button>
-                            <button class="ratio-btn">16:9</button>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="app.generateReal()">Сгенерировать</button>
-                </div>
             </section>
 
             <!-- VIEW: GALLERY -->

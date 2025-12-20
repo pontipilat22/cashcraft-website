@@ -123,7 +123,6 @@ const app = {
 
         // Показать нужный view
         let targetId = 'view-' + viewName;
-        if (viewName === 'generator') targetId = 'view-generator';
 
         const targetEl = document.getElementById(targetId);
         if (targetEl) targetEl.classList.remove('hidden');
@@ -721,7 +720,7 @@ const app = {
         this.nav('generation');
 
         // Set prompt
-        const textarea = document.getElementById('generation-prompt') || document.querySelector('#view-generator textarea');
+        const textarea = document.getElementById('generation-prompt');
         if (textarea) {
             textarea.value = prompt;
         }
