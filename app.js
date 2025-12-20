@@ -1127,7 +1127,9 @@ const app = {
                     </div>
                     ${payment.status === 'pending' ? `
                         <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 8px; padding: 10px; margin-top: 10px;">
-                            <p class="text-dim" style="font-size: 12px;">⏳ Ожидайте, администратор вышлет счет на указанный номер Kaspi</p>
+                            <p class="text-dim" style="font-size: 12px; margin-bottom: 8px;">1. Оплатите на Kaspi по номеру (вам пришлют счет)</p>
+                            <p class="text-dim" style="font-size: 12px; margin-bottom: 8px;">2. Нажмите кнопку ниже:</p>
+                            <button onclick="app.markAsPaid('${payment._id}')" class="btn" style="background: var(--success); color: #fff; width: 100%; font-size: 13px; padding: 8px;">✅ Я оплатил</button>
                         </div>
                     ` : `
                         <button class="btn btn-primary" onclick="app.markAsPaid('${payment._id}')" disabled style="opacity: 0.6;">
@@ -1137,6 +1139,27 @@ const app = {
                 </div>
             `;
         }).join('');
+    },
+
+    async markAsPaid(paymentId) {
+        if (!confirm('Вы действительно перевели деньги?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/payments/${paymentId}/mark-paid`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Статус обновлен! Администратор скоро начислит кристаллы.');
+                this.loadActivePayments();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Server error'));
+            }
+        } catch (error) {
+            console.error('Error marking paid:', error);
+            alert('Ошибка сети');
+        }
     },
     async markAsPaid(paymentId) {
         if (!confirm('Вы уверены, что оплатили счет?')) return;
