@@ -1161,24 +1161,7 @@ const app = {
             alert('Ошибка сети');
         }
     },
-    async markAsPaid(paymentId) {
-        if (!confirm('Вы уверены, что оплатили счет?')) return;
 
-        try {
-            const response = await fetch(`${API_URL}/payments/${paymentId}/mark-paid`, {
-                method: 'POST'
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                alert('Спасибо! Администратор проверит платеж и зачислит кристаллы.');
-                this.loadActivePayments();
-            }
-        } catch (error) {
-            console.error('Error marking as paid:', error);
-        }
-    }
 };
 
 // ============================================

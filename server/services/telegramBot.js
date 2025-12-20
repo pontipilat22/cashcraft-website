@@ -84,19 +84,23 @@ const initBot = () => {
 // Функция отправки следующей заявки
 const sendNextPayment = async (chatId) => {
     try {
-        // Ищем самую старую (сортировка по дате создания) заявку со статусом 'paid'
-        // 'paid' означает, что юзер нажал "Я оплатил", но админ еще не подтвердил
-        const payment = await Payment.findOne({ status: 'paid' }).sort({ createdAt: 1 });
+        // Ищем самую старую заявку со статусом 'paid' ИЛИ 'pending'
+        const payment = await Payment.findOne({ status: { $in: ['pending', 'paid'] } }).sort({ createdAt: 1 });
 
         if (!payment) {
             bot.sendMessage(chatId, '🎉 Все заявки обработаны! Новых нет.');
             return;
         }
 
+        const statusIcon = payment.status === 'paid' ? '🟢' : '🟡';
+        const statusText = payment.status === 'paid' ? 'ОПЛАЧЕНО (Ждет подтверждения)' : 'НОВАЯ (Ждет счета)';
+
         // Формируем сообщение (Mono font for easy copying)
         const message = `
-💰 *Новая заявка*
+💰 *Заявка* ${statusIcon}
 ------------------
+Статус: ${statusText}
+
 👤 Имя: \`${payment.kaspiName}\`
 📱 Телефон: \`${payment.kaspiPhone}\`
 💸 Сумма: \`${payment.amount}\`
@@ -132,7 +136,7 @@ const approvePayment = async (paymentId, chatId, messageId) => {
         return;
     }
 
-    if (payment.status !== 'paid') {
+    if (payment.status !== 'paid' && payment.status !== 'pending') {
         bot.editMessageText(`⚠️ Эта заявка уже имеет статус: ${payment.status}`, { chat_id: chatId, message_id: messageId });
         return;
     }
