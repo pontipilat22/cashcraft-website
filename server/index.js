@@ -294,36 +294,42 @@ app.post('/api/generations', async (req, res) => {
         let enhancedPrompt = prompt;
         const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
 
+        console.log(`[DeepSeek Check] Key exists: ${!!DEEPSEEK_KEY}`);
+
         if (DEEPSEEK_KEY) {
             try {
-                console.log(`[DeepSeek] Enhancing prompt: ${prompt}`);
+                console.log(`[DeepSeek] Start enhancement for: "${prompt}"`);
                 const dsResponse = await axios.post('https://api.deepseek.com/chat/completions', {
                     model: "deepseek-chat",
                     messages: [
                         {
                             role: "system",
-                            content: "You are a world-class prompt engineer for AI image generation (Flux.1 model). Your goal is to turn simple user ideas into high-end, masterpiece-level professional prompts.\n                            Structure your response as a single cohesive paragraph following this blueprint:\n                            1. [SUBJECT]: A detailed description of a person, their clothing, hair texture, skin details, expression, and pose.\n                            2. [ENVIRONMENT]: Intricate details of the surrounding setting, atmosphere, background objects, and mood.\n                            3. [LIGHTING]: Cinematic, professional lighting terms (volumetric, golden hour, rim light, soft shadows, subsurface scattering).\n                            4. [CAMERA]: Camera angle, specific lens (e.g., 35mm, 85mm), depth of field, and photorealistic 8k quality keywords.\n                            \n                            CRITICAL RULES:\n                            - The subject MUST be a human (person) unless explicitly asked otherwise.\n                            - Ensure strictly realistic physics and anatomy.\n                            - Translated to English only.\n                            - RETURN ONLY the final text. No intro, no quotes, no explanations."
+                            content: "You are a professional AI prompt engineer. MANDATORY: Translate the input to English and expand it into a detailed photorealistic prompt. Structure: [Subject], [Environment], [Lighting], [Camera/Quality]. CRITICAL: Always output in English only. Never include Russian text in the output."
                         },
-                        { role: "user", content: prompt }
+                        { role: "user", content: `Translate and enhance this for Flux.1 AI: ${prompt}` }
                     ],
-                    max_tokens: 300,
+                    max_tokens: 500,
                     temperature: 0.7
                 }, {
                     headers: {
                         'Authorization': `Bearer ${DEEPSEEK_KEY}`,
                         'Content-Type': 'application/json'
                     },
-                    timeout: 8000 // 8s timeout for AI response
+                    timeout: 15000 // Increase timeout to 15s
                 });
 
                 if (dsResponse.data.choices && dsResponse.data.choices[0].message) {
-                    enhancedPrompt = dsResponse.data.choices[0].message.content.trim();
-                    console.log(`[DeepSeek] Success! Enhanced: ${enhancedPrompt}`);
+                    const result = dsResponse.data.choices[0].message.content.trim();
+                    if (result && result.length > 5) {
+                        enhancedPrompt = result;
+                        console.log(`[DeepSeek] Success! New prompt: ${enhancedPrompt}`);
+                    }
                 }
             } catch (dsError) {
-                console.error('[DeepSeek Error] Falling back to original prompt:', dsError.response?.data || dsError.message);
-                // Continue with original prompt if DS fails
+                console.error('[DeepSeek Error] Detail:', dsError.response?.data || dsError.message);
             }
+        } else {
+            console.warn('[DeepSeek] Skipping enhancement: DEEPSEEK_API_KEY is not defined in environment.');
         }
 
         const API_KEY = process.env.ASTRIA_API_KEY;
