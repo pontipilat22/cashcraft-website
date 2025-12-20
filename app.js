@@ -807,7 +807,8 @@ const app = {
             }
         } catch (error) {
             console.error('Error starting training:', error);
-            alert('Ошибка: ' + error.message);
+            const errorMsg = error.message.length > 200 ? error.message.substring(0, 200) + '...' : error.message;
+            alert('❌ Ошибка обучения:\n' + errorMsg + '\n\nБаланс кристаллов был возвращен.');
             btn.innerText = orgText;
             btn.disabled = false;
         }

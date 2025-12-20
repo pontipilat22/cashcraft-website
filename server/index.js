@@ -433,7 +433,9 @@ app.post('/api/models', async (req, res) => {
                 token: 'ohwx', // Trigger word
                 image_urls: trainingImages,
                 callback: WEBHOOK_URL,
-                base_tune_id: 1504944 // Flux 1 (Flux1.dev)
+                base_tune_id: 1504944, // Flux 1 (Flux1.dev)
+                model_type: 'lora',
+                preset: 'flux-lora-portrait'
             }
         };
 
@@ -454,8 +456,25 @@ app.post('/api/models', async (req, res) => {
 
         res.json({ success: true, model, remainingCredits: user.credits });
     } catch (error) {
-        console.error('Training Error:', error.response ? error.response.data : error.message);
-        res.status(500).json({ success: false, error: 'Training failed: ' + (error.response?.data?.error || error.message) });
+        console.error('Training Error Detail:', JSON.stringify(error.response?.data || error.message, null, 2));
+
+        // Refund Credits on failure
+        try {
+            const user = await User.findById(req.body.userId);
+            if (user) {
+                user.credits += 50;
+                await user.save();
+                console.log('Credits refunded due to training start failure.');
+            }
+        } catch (refundError) {
+            console.error('Failed to refund credits:', refundError.message);
+        }
+
+        const astriaError = error.response?.data?.error || error.response?.data?.errors || error.message;
+        res.status(500).json({
+            success: false,
+            error: 'Training failed: ' + (typeof astriaError === 'object' ? JSON.stringify(astriaError) : astriaError)
+        });
     }
 });
 
