@@ -280,12 +280,12 @@ const app = {
         countSpan.innerText = this.state.uploadedFiles.length;
 
         // Enable/disable train button
-        if (this.state.uploadedFiles.length >= 10 && this.state.uploadedFiles.length <= 20) {
+        if (this.state.uploadedFiles.length >= 4 && this.state.uploadedFiles.length <= 30) {
             console.log(`[Files] Valid count. Enabling train button.`);
             trainBtn.disabled = false;
             trainBtn.style.opacity = '1';
         } else {
-            console.log(`[Files] Invalid count (${this.state.uploadedFiles.length}). Button stays disabled.`);
+            console.log(`[Files] Invalid count (${this.state.uploadedFiles.length}). Button stays disabled. Нужно 4-30.`);
             trainBtn.disabled = true;
             trainBtn.style.opacity = '0.5';
         }
@@ -700,8 +700,8 @@ const app = {
             return;
         }
 
-        if (this.state.uploadedFiles.length < 10 || this.state.uploadedFiles.length > 20) {
-            alert('Загрузите от 10 до 20 фотографий');
+        if (this.state.uploadedFiles.length < 4 || this.state.uploadedFiles.length > 30) {
+            alert('Загрузите от 4 до 30 фотографий. Рекомендуется 10-15 для лучшего сходства.');
             return;
         }
 
