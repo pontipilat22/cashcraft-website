@@ -702,6 +702,7 @@ const app = {
                             <div class="template-item card ${tpl.isHit ? 'hit-card' : ''}" 
                                  onclick="app.selectTemplate(this)"
                                  data-prompt="${tpl.prompt.replace(/"/g, '&quot;')}"
+                                 data-name="${tpl.name.replace(/"/g, '&quot;')}"
                                  data-image="${tpl.imageUrl}">
                                 <div style="aspect-ratio: 1/1; margin-bottom: 10px; position: relative; border-radius: 8px; overflow: hidden;">
                                     <img src="${tpl.imageUrl}" alt="${tpl.name}" style="width:100%; height:100%; object-fit:cover;">
@@ -719,8 +720,9 @@ const app = {
     },
 
     selectTemplate(el) {
-        const prompt = el.getAttribute('data-prompt');
+        const promptText = el.getAttribute('data-prompt');
         const imageUrl = el.getAttribute('data-image');
+        const name = el.getAttribute('data-name');
 
         // Switch to generation view
         this.nav('generation');
@@ -728,10 +730,11 @@ const app = {
         // Set prompt
         const textarea = document.getElementById('generation-prompt');
         if (textarea) {
-            textarea.value = prompt;
+            textarea.value = promptText;
         }
 
         this.state.selectedTemplateImageUrl = imageUrl;
+        this.state.selectedTemplateName = name;
         this.updateSelectedTemplateUI();
 
         // Scroll to top
@@ -744,13 +747,10 @@ const app = {
 
         if (this.state.selectedTemplateImageUrl) {
             previewContainer.innerHTML = `
-                <div style="position: relative; width: 60px; height: 60px; border-radius: 8px; overflow: hidden; border: 2px solid var(--primary); flex-shrink: 0;">
-                    <img src="${this.state.selectedTemplateImageUrl}" style="width: 100%; height: 100%; object-fit: cover;">
-                    <button onclick="app.clearSelectedTemplate()" style="position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.7); color: white; border: none; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-bottom-left-radius: 4px;">✕</button>
-                </div>
-                <div style="flex: 1;">
-                    <div style="font-size: 0.85rem; font-weight: 600; color: white;">Стиль выбран</div>
-                    <div style="font-size: 0.7rem; color: #888;">Изображение будет использовано как образец</div>
+                <div style="display: flex; align-items: center; gap: 8px; background: rgba(var(--primary-rgb, 240, 147, 251), 0.15); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(var(--primary-rgb, 240, 147, 251), 0.3); max-width: fit-content;">
+                    <span style="font-size: 0.75rem; font-weight: 600; color: #fff;">✨ Стиль: ${this.state.selectedTemplateName || 'Выбран'}</span>
+                    <button onclick="app.clearSelectedTemplate()" style="background: none; border: none; color: #fff; padding: 0 0 0 4px; cursor: pointer; font-size: 14px; line-height: 1; display: flex; align-items: center; opacity: 0.7;">✕</button>
+                    <img src="${this.state.selectedTemplateImageUrl}" style="width: 20px; height: 20px; border-radius: 4px; object-fit: cover;">
                 </div>
             `;
             previewContainer.classList.remove('hidden');
@@ -762,6 +762,7 @@ const app = {
 
     clearSelectedTemplate() {
         this.state.selectedTemplateImageUrl = null;
+        this.state.selectedTemplateName = null;
         this.updateSelectedTemplateUI();
     },
 

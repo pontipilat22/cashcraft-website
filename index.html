@@ -130,11 +130,6 @@
                     <textarea id="generation-prompt" rows="3" placeholder="Опишите образ..."
                         style="margin-bottom: 8px; font-size: 15px;"></textarea>
 
-                    <!-- SELECTED TEMPLATE PREVIEW -->
-                    <div id="selected-template-preview" class="hidden"
-                        style="margin-bottom: 15px; display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px;">
-                    </div>
-
                     <!-- Compact Settings Row -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                         <!-- Aspect Ratio Button -->
@@ -161,7 +156,7 @@
                     </div>
 
                     <!-- Quality Settings -->
-                    <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <label class="quality-toggle" style="padding: 8px 12px; font-size: 0.8rem;">
                             <input type="checkbox" id="toggle-super-res">
                             <span>HD Качество</span>
@@ -171,6 +166,9 @@
                             <span>Плёнка</span>
                         </label>
                     </div>
+
+                    <!-- SELECTED TEMPLATE YARLYK (Label) -->
+                    <div id="selected-template-preview" class="hidden" style="margin-bottom: 15px;"></div>
 
                     <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()"
                         style="padding: 14px; font-size: 15px;">
