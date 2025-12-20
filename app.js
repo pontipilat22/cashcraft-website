@@ -280,12 +280,12 @@ const app = {
         countSpan.innerText = this.state.uploadedFiles.length;
 
         // Enable/disable train button
-        if (this.state.uploadedFiles.length >= 4 && this.state.uploadedFiles.length <= 30) {
+        if (this.state.uploadedFiles.length >= 3 && this.state.uploadedFiles.length <= 30) {
             console.log(`[Files] Valid count. Enabling train button.`);
             trainBtn.disabled = false;
             trainBtn.style.opacity = '1';
         } else {
-            console.log(`[Files] Invalid count (${this.state.uploadedFiles.length}). Button stays disabled. Нужно 4-30.`);
+            console.log(`[Files] Invalid count (${this.state.uploadedFiles.length}). Button stays disabled. Нужно 3-30.`);
             trainBtn.disabled = true;
             trainBtn.style.opacity = '0.5';
         }
@@ -700,8 +700,8 @@ const app = {
             return;
         }
 
-        if (this.state.uploadedFiles.length < 4 || this.state.uploadedFiles.length > 30) {
-            alert('Загрузите от 4 до 30 фотографий. Рекомендуется 10-15 для лучшего сходства.');
+        if (this.state.uploadedFiles.length < 3 || this.state.uploadedFiles.length > 30) {
+            alert('Загрузите от 3 до 30 фотографий. Рекомендуется 8-20 для лучшего сходства.');
             return;
         }
 
@@ -752,8 +752,8 @@ const app = {
 
             console.log(`[Training] Total uploaded images: ${trainingImages.length}`);
 
-            if (trainingImages.length < 10) {
-                throw new Error(`Удалось загрузить только ${trainingImages.length} фото из ${this.state.uploadedFiles.length}. Нужно минимум 10. Проверьте интернет.`);
+            if (trainingImages.length < 3) {
+                throw new Error(`Удалось загрузить только ${trainingImages.length} фото из ${this.state.uploadedFiles.length}. Нужно минимум 3. Проверьте интернет.`);
             }
 
             btn.innerText = "🚀 Запуск обучения...";
