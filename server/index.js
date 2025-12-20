@@ -290,6 +290,42 @@ app.post('/api/generations', async (req, res) => {
         user.credits -= cost;
         await user.save();
 
+        // 4. Enhance prompt with DeepSeek (RU -> EN + Professional enhancement)
+        let enhancedPrompt = prompt;
+        const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
+
+        if (DEEPSEEK_KEY) {
+            try {
+                console.log(`[DeepSeek] Enhancing prompt: ${prompt}`);
+                const dsResponse = await axios.post('https://api.deepseek.com/chat/completions', {
+                    model: "deepseek-chat",
+                    messages: [
+                        {
+                            role: "system",
+                            content: "You are a professional prompt engineer for AI image generation (Flux.1 model). Your task is to: 1. Translate the user's prompt from Russian to English if needed. 2. Enhance it with descriptive details, lighting, and style keywords to make it photorealistic and professional. 3. Return ONLY the final English prompt text. Do not include any explanations, quotes, or introduction."
+                        },
+                        { role: "user", content: prompt }
+                    ],
+                    max_tokens: 300,
+                    temperature: 0.7
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${DEEPSEEK_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    timeout: 8000 // 8s timeout for AI response
+                });
+
+                if (dsResponse.data.choices && dsResponse.data.choices[0].message) {
+                    enhancedPrompt = dsResponse.data.choices[0].message.content.trim();
+                    console.log(`[DeepSeek] Success! Enhanced: ${enhancedPrompt}`);
+                }
+            } catch (dsError) {
+                console.error('[DeepSeek Error] Falling back to original prompt:', dsError.response?.data || dsError.message);
+                // Continue with original prompt if DS fails
+            }
+        }
+
         const API_KEY = process.env.ASTRIA_API_KEY;
         const BASE_DOMAIN = process.env.BASE_DOMAIN || 'https://www.ai-photo.kz';
 
@@ -297,7 +333,7 @@ app.post('/api/generations', async (req, res) => {
 
         const promptPayload = {
             prompt: {
-                text: `ohwx ${modelGender} ${prompt}`,
+                text: `ohwx ${modelGender} ${enhancedPrompt}`,
                 num_images: Math.min(photoCount, 8),
                 callback: webhookUrl
             }
