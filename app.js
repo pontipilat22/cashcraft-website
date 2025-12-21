@@ -248,7 +248,7 @@ const app = {
         }
 
         gallery.innerHTML = filteredGens.map(gen => `
-            <div class="placeholder-img">
+            <div class="placeholder-img" style="cursor: pointer;" onclick="app.openImageModal('${gen.imageUrl}', '${gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${gen._id}')">
                 <img src="${gen.imageUrl}" alt="${gen.prompt}">
             </div>
         `).join('');
@@ -545,7 +545,7 @@ const app = {
         }
 
         resultsDiv.innerHTML = filteredGens.map(gen => `
-            <div class="placeholder-img" style="animation: fadeIn 0.5s">
+            <div class="placeholder-img" style="animation: fadeIn 0.5s; cursor: pointer;" onclick="app.openImageModal('${gen.imageUrl}', '${gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${gen._id}')">
                 <img src="${gen.imageUrl}" alt="${gen.prompt}" style="width:100%; height:100%; object-fit:cover;">
             </div>
         `).join('');
@@ -982,6 +982,95 @@ const app = {
     // Close ratio modal
     closeRatioModal() {
         document.getElementById('modal-ratio').classList.remove('open');
+    },
+
+    // ============================================
+    // IMAGE VIEWER MODAL FUNCTIONS
+    // ============================================
+
+    // Current viewed image data
+    currentViewedImage: null,
+
+    // Open image modal
+    openImageModal(imageUrl, prompt, generationId) {
+        this.currentViewedImage = { imageUrl, prompt, generationId };
+
+        document.getElementById('modal-image-src').src = imageUrl;
+        document.getElementById('modal-image-prompt').textContent = prompt || '';
+        document.getElementById('modal-image-viewer').classList.add('open');
+    },
+
+    // Close image modal
+    closeImageModal() {
+        document.getElementById('modal-image-viewer').classList.remove('open');
+        this.currentViewedImage = null;
+    },
+
+    // Download image (FREE)
+    async downloadImage() {
+        if (!this.currentViewedImage) return;
+
+        try {
+            const response = await fetch(this.currentViewedImage.imageUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ai-portrait-${Date.now()}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download error:', error);
+            // Fallback: open in new tab
+            window.open(this.currentViewedImage.imageUrl, '_blank');
+        }
+    },
+
+    // Regenerate variant (3 crystals)
+    async regenerateVariant() {
+        if (!this.currentViewedImage) return;
+        if (!this.state.user) {
+            alert('Пожалуйста, войдите в систему');
+            return;
+        }
+
+        const cost = 3;
+        if (this.state.user.credits < cost) {
+            alert(`Недостаточно кредитов. Нужно ${cost} 💎, у вас ${this.state.user.credits} 💎`);
+            return;
+        }
+
+        if (!confirm(`Создать новый вариант этого изображения?\n\nБудет списано ${cost} 💎`)) {
+            return;
+        }
+
+        // Close modal
+        this.closeImageModal();
+
+        // Navigate to generation tab
+        this.nav('generation');
+
+        // Set prompt from the image
+        const textarea = document.getElementById('generation-prompt');
+        if (textarea && this.currentViewedImage.prompt) {
+            textarea.value = this.currentViewedImage.prompt;
+        }
+
+        // Set photo count to 1
+        const photoCountSelect = document.getElementById('photo-count-select');
+        if (photoCountSelect) {
+            photoCountSelect.value = '1';
+            this.state.photoCount = 1;
+        }
+
+        // Trigger generation
+        setTimeout(() => {
+            const btn = document.getElementById('generate-btn');
+            if (btn) btn.click();
+        }, 100);
     },
 
     // ============================================

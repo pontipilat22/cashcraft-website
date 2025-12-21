@@ -596,6 +596,39 @@
         </div>
     </div>
 
+    <!-- MODAL: Image Viewer -->
+    <div id="modal-image-viewer" class="modal-overlay" onclick="app.closeImageModal()">
+        <div class="modal-box" style="max-width: 90vw; max-height: 90vh; padding: 15px; background: #0a0a0f;"
+            onclick="event.stopPropagation()">
+            <!-- Close Button -->
+            <button onclick="app.closeImageModal()"
+                style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; z-index: 10;">×</button>
+
+            <!-- Image Container -->
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 15px;">
+                <img id="modal-image-src" src="" alt="Generated"
+                    style="max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 12px;">
+            </div>
+
+            <!-- Prompt Display -->
+            <p id="modal-image-prompt" class="text-dim"
+                style="text-align: center; font-size: 0.85rem; margin-bottom: 20px; max-height: 60px; overflow-y: auto;">
+            </p>
+
+            <!-- Action Buttons -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-secondary" onclick="app.downloadImage()"
+                    style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span>📥</span> Скачать
+                </button>
+                <button class="btn btn-primary" onclick="app.regenerateVariant()"
+                    style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span>🔄</span> Новый вариант <span style="opacity: 0.7;">3💎</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Подключение скриптов -->
     <script src="app.js"></script>
 </body>
