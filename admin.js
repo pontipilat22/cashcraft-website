@@ -80,9 +80,48 @@ const adminApp = {
                 document.getElementById('stat-crystals').textContent = stats.totalCrystalsSold;
                 document.getElementById('stat-revenue').textContent = stats.totalRevenue.toLocaleString() + '₸';
                 document.getElementById('stat-pending').textContent = stats.pendingPayments + stats.paidPayments;
+
+                // Sync payments toggle
+                const toggle = document.getElementById('payments-enabled-toggle');
+                if (toggle) {
+                    toggle.checked = stats.paymentsEnabled !== false;
+                }
             }
         } catch (error) {
             console.error('Error loading stats:', error);
+        }
+    },
+
+    // Toggle payments enabled
+    async togglePaymentsEnabled() {
+        const toggle = document.getElementById('payments-enabled-toggle');
+        const enabled = toggle.checked;
+
+        try {
+            const response = await fetch(`${API_URL}/admin/settings/payments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const status = data.paymentsEnabled ? 'ВКЛЮЧЁН' : 'ВЫКЛЮЧЕН';
+                console.log(`[Admin] Payments ${status}`);
+
+                // Show confirmation toast
+                const toast = document.createElement('div');
+                toast.textContent = data.paymentsEnabled ? '✓ Приём заявок включён' : '⚠️ Приём заявок приостановлен';
+                toast.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: ${data.paymentsEnabled ? '#22c55e' : '#eab308'}; color: ${data.paymentsEnabled ? 'white' : 'black'}; padding: 12px 24px; border-radius: 8px; z-index: 9999;`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            }
+        } catch (error) {
+            console.error('Toggle payments error:', error);
+            // Revert toggle on error
+            toggle.checked = !enabled;
+            alert('Ошибка изменения настройки');
         }
     },
 

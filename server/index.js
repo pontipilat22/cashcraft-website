@@ -53,6 +53,13 @@ mongoose.connect(process.env.MONGODB_URI)
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ============================================
+// SERVER SETTINGS (in-memory, resets on restart)
+// ============================================
+let serverSettings = {
+    paymentsEnabled: true
+};
+
+// ============================================
 // AUTH ROUTES
 // ============================================
 
@@ -621,12 +628,30 @@ app.get('/api/admin/stats', async (req, res) => {
                 pendingPayments,
                 paidPayments,
                 totalCrystalsSold,
-                totalRevenue
+                totalRevenue,
+                paymentsEnabled: serverSettings.paymentsEnabled
             }
         });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
+});
+
+// Toggle payments enabled (Admin)
+app.post('/api/admin/settings/payments', async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        serverSettings.paymentsEnabled = !!enabled;
+        console.log(`[Settings] Payments enabled: ${serverSettings.paymentsEnabled}`);
+        res.json({ success: true, paymentsEnabled: serverSettings.paymentsEnabled });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get payment status (Public)
+app.get('/api/settings/payments', (req, res) => {
+    res.json({ success: true, paymentsEnabled: serverSettings.paymentsEnabled });
 });
 
 // Get all users

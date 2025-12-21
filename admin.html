@@ -56,6 +56,20 @@
                 </div>
             </div>
 
+            <!-- Payment Control -->
+            <div class="card mb-4"
+                style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0;">Приём заявок на пополнение</h4>
+                    <p class="text-dim" style="margin: 5px 0 0 0; font-size: 0.85rem;">Отключите, если много заявок</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="payments-enabled-toggle" checked
+                        onchange="adminApp.togglePaymentsEnabled()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
             <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="adminApp.switchTab('payments')">Платежи</button>

@@ -190,8 +190,7 @@ const app = {
             this.refreshUserCredits();
             this.loadUserTickets();
         } else if (viewName === 'payment') {
-            document.getElementById('payment-methods-section').classList.remove('hidden');
-            document.getElementById('kaspi-payment-section').classList.add('hidden');
+            this.updatePaymentUI();
             this.activePayments = [];
             this.loadActivePayments();
         } else if (viewName === 'models') {
@@ -1091,12 +1090,48 @@ const app = {
     // PAYMENT FUNCTIONS
     // ============================================
 
+    // Check if payments are enabled
+    async checkPaymentsEnabled() {
+        try {
+            const response = await fetch(`${API_URL}/settings/payments`);
+            const data = await response.json();
+            return data.paymentsEnabled !== false;
+        } catch (error) {
+            console.error('Check payments error:', error);
+            return true; // Default to enabled on error
+        }
+    },
+
+    // Update payment UI based on status
+    async updatePaymentUI() {
+        const enabled = await this.checkPaymentsEnabled();
+        const disabledMsg = document.getElementById('payments-disabled-message');
+        const methodsSection = document.getElementById('payment-methods-section');
+        const kaspiSection = document.getElementById('kaspi-payment-section');
+
+        if (enabled) {
+            disabledMsg?.classList.add('hidden');
+            methodsSection?.classList.remove('hidden');
+        } else {
+            disabledMsg?.classList.remove('hidden');
+            methodsSection?.classList.add('hidden');
+            kaspiSection?.classList.add('hidden');
+        }
+    },
+
     showPaymentMethods() {
         document.getElementById('payment-methods-section').classList.remove('hidden');
         document.getElementById('kaspi-payment-section').classList.add('hidden');
     },
 
-    showKaspiSection() {
+    async showKaspiSection() {
+        // Check if payments are enabled first
+        const enabled = await this.checkPaymentsEnabled();
+        if (!enabled) {
+            this.updatePaymentUI();
+            return;
+        }
+
         document.getElementById('payment-methods-section').classList.add('hidden');
         document.getElementById('kaspi-payment-section').classList.remove('hidden');
     },
