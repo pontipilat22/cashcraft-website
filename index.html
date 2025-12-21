@@ -146,11 +146,9 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                         <!-- Aspect Ratio Button -->
                         <button class="settings-btn" onclick="app.showRatioModal()"
-                            style="justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div id="ratio-icon"></div>
-                                <span id="ratio-label" style="font-size: 13px; font-weight: 500;">2:3</span>
-                            </div>
+                            style="justify-content: center; gap: 8px;">
+                            <div id="ratio-icon"></div>
+                            <span id="ratio-label" style="font-size: 13px; font-weight: 500;">2:3</span>
                             <span style="font-size: 11px; color: var(--text-dim);">▼</span>
                         </button>
 
@@ -168,14 +166,18 @@
                     </div>
 
                     <!-- Quality Settings -->
-                    <div style="margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                         <label class="quality-toggle">
                             <input type="checkbox" id="toggle-super-res">
-                            <span>HD Качество</span>
+                            <span>HD</span>
                         </label>
                         <label class="quality-toggle">
                             <input type="checkbox" id="toggle-film-grain">
                             <span>Плёнка</span>
+                        </label>
+                        <label class="quality-toggle">
+                            <input type="checkbox" id="toggle-inpaint-faces" checked>
+                            <span>Лица</span>
                         </label>
                     </div>
 

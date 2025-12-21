@@ -610,6 +610,7 @@ const app = {
                     count: photoCount,
                     superResolution: document.getElementById('toggle-super-res').checked,
                     filmGrain: document.getElementById('toggle-film-grain').checked,
+                    inpaintFaces: document.getElementById('toggle-inpaint-faces').checked,
                     templateImageUrl: this.state.selectedTemplateImageUrl
                 })
             });

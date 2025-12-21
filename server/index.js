@@ -256,7 +256,7 @@ app.post('/api/generations/cleanup-test-data', async (req, res) => {
 // Create new generation (Start)
 app.post('/api/generations', async (req, res) => {
     try {
-        const { userId, prompt, modelId, aspectRatio, count, superResolution, filmGrain, templateImageUrl } = req.body;
+        const { userId, prompt, modelId, aspectRatio, count, superResolution, filmGrain, inpaintFaces, templateImageUrl } = req.body;
         const photoCount = count || 4;
 
         if (modelId === 'demo') {
@@ -359,6 +359,7 @@ app.post('/api/generations', async (req, res) => {
                 callback: webhookUrl,
                 super_resolution: !!superResolution,
                 film_grain: !!filmGrain,
+                inpaint_faces: !!inpaintFaces,
                 input_image_url: templateImageUrl || undefined,
                 w: size.w,
                 h: size.h
