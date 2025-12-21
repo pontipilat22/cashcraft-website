@@ -1007,25 +1007,28 @@ const app = {
     },
 
     // Download image (FREE)
-    async downloadImage() {
+    downloadImage() {
         if (!this.currentViewedImage) return;
 
-        try {
-            const response = await fetch(this.currentViewedImage.imageUrl);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+        // For mobile: open image in new tab (user can long-press to save)
+        // For desktop: try download via link
+        const a = document.createElement('a');
+        a.href = this.currentViewedImage.imageUrl;
+        a.target = '_blank';
+        a.download = `ai-portrait-${Date.now()}.jpg`;
+        a.rel = 'noopener noreferrer';
 
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ai-portrait-${Date.now()}.jpg`;
+        // Check if mobile
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // On mobile, open in new tab - user can long-press to save
+            window.open(this.currentViewedImage.imageUrl, '_blank');
+        } else {
+            // On desktop, try download
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Download error:', error);
-            // Fallback: open in new tab
-            window.open(this.currentViewedImage.imageUrl, '_blank');
         }
     },
 
@@ -1047,16 +1050,19 @@ const app = {
             return;
         }
 
+        // Save prompt before closing modal
+        const savedPrompt = this.currentViewedImage.prompt;
+
         // Close modal
         this.closeImageModal();
 
         // Navigate to generation tab
         this.nav('generation');
 
-        // Set prompt from the image
+        // Set prompt from the saved image prompt
         const textarea = document.getElementById('generation-prompt');
-        if (textarea && this.currentViewedImage.prompt) {
-            textarea.value = this.currentViewedImage.prompt;
+        if (textarea && savedPrompt) {
+            textarea.value = savedPrompt;
         }
 
         // Set photo count to 1
@@ -1064,13 +1070,13 @@ const app = {
         if (photoCountSelect) {
             photoCountSelect.value = '1';
             this.state.photoCount = 1;
+            this.updatePhotoCount();
         }
 
-        // Trigger generation
+        // Trigger generation directly
         setTimeout(() => {
-            const btn = document.getElementById('generate-btn');
-            if (btn) btn.click();
-        }, 100);
+            this.generateImage();
+        }, 200);
     },
 
     // ============================================
