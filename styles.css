@@ -49,12 +49,21 @@ body {
         radial-gradient(circle at 90% 80%, rgba(20, 20, 20, 0.4) 0%, transparent 40%);
     color: var(--text-main);
     height: 100vh;
+    height: 100dvh;
+    /* Dynamic viewport height for mobile browsers */
     overflow: hidden;
+    overscroll-behavior: none;
+    /* Prevent pull-to-refresh and rubber-banding */
     display: flex;
     flex-direction: column;
     font-size: 16px;
     line-height: 1.6;
     letter-spacing: -0.01em;
+    position: fixed;
+    /* Prevent body scroll on mobile */
+    width: 100%;
+    top: 0;
+    left: 0;
 }
 
 /* Scrollbar styling */
@@ -372,6 +381,11 @@ label {
 .main-content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    /* Prevent scroll chaining */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
     padding: 20px;
     padding-bottom: 100px;
     /* Space for mobile nav */
