@@ -166,6 +166,9 @@ const adminApp = {
                             <button class="btn btn-danger" onclick="adminApp.rejectPayment('${payment._id}')">
                                 ✗ Отклонить
                             </button>
+                            <button class="btn btn-danger" style="margin-left: 5px; opacity: 0.8;" onclick="adminApp.deletePayment('${payment._id}')">
+                                🗑
+                            </button>
                         </div>
                     ` : payment.status === 'paid' ? `
                         <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px; margin-top: 15px;">
