@@ -187,16 +187,12 @@ const app = {
         } else if (viewName === 'gallery') {
             this.loadUserGenerations();
         } else if (viewName === 'settings') {
-            this.activePayments = []; // Reset to avoid duplicates before load
-            this.refreshUserCredits(); // Refresh credits when opening settings
+            this.refreshUserCredits();
+        } else if (viewName === 'payment') {
+            document.getElementById('payment-methods-section').classList.remove('hidden');
+            document.getElementById('kaspi-payment-section').classList.add('hidden');
+            this.activePayments = [];
             this.loadActivePayments();
-
-            // Reset payment UI state
-            if (document.getElementById('start-payment-container')) {
-                document.getElementById('start-payment-container').classList.remove('hidden');
-                document.getElementById('payment-methods-section').classList.add('hidden');
-                document.getElementById('kaspi-payment-section').classList.add('hidden');
-            }
         } else if (viewName === 'models') {
             this.loadUserModels();
         } else if (viewName === 'templates') {
