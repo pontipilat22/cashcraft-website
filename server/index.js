@@ -342,6 +342,15 @@ app.post('/api/generations', async (req, res) => {
 
         const webhookUrl = `${BASE_DOMAIN}/api/webhooks/astria?type=prompt&userId=${userId}&modelId=${modelId}&aspectRatio=${aspectRatio}`;
 
+        const bbox = {
+            '1:1': { w: 512, h: 512 },
+            '2:3': { w: 512, h: 768 },
+            '3:2': { w: 768, h: 512 },
+            '9:16': { w: 512, h: 896 },
+            '16:9': { w: 896, h: 512 }
+        };
+        const size = bbox[aspectRatio] || bbox['2:3'];
+
         const promptPayload = {
             prompt: {
                 text: `ohwx ${modelGender} ${enhancedPrompt}`,
@@ -349,7 +358,9 @@ app.post('/api/generations', async (req, res) => {
                 callback: webhookUrl,
                 super_resolution: !!superResolution,
                 film_grain: !!filmGrain,
-                input_image_url: templateImageUrl || undefined
+                input_image_url: templateImageUrl || undefined,
+                w: size.w,
+                h: size.h
             }
         };
 

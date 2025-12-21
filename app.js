@@ -43,6 +43,31 @@ const app = {
         localStorage.setItem('user', JSON.stringify(user));
     },
 
+    // Save app settings
+    saveSettings() {
+        const settings = {
+            selectedModel: this.state.selectedModel,
+            selectedRatio: this.state.selectedRatio,
+            photoCount: this.state.photoCount
+        };
+        localStorage.setItem('app_settings', JSON.stringify(settings));
+    },
+
+    // Load app settings
+    loadSettings() {
+        try {
+            const saved = localStorage.getItem('app_settings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                if (settings.selectedModel) this.state.selectedModel = settings.selectedModel;
+                if (settings.selectedRatio) this.state.selectedRatio = settings.selectedRatio;
+                if (settings.photoCount) this.state.photoCount = settings.photoCount;
+            }
+        } catch (e) {
+            console.error('Error loading settings', e);
+        }
+    },
+
     // Show main app (hide landing)
     showMainApp() {
         const landing = document.getElementById('page-landing');
