@@ -988,14 +988,18 @@ const app = {
     // ============================================
 
     showPaymentMethods() {
-        document.getElementById('start-payment-container').classList.add('hidden');
         document.getElementById('payment-methods-section').classList.remove('hidden');
+        document.getElementById('kaspi-payment-section').classList.add('hidden');
+    },
+
+    showKaspiSection() {
+        document.getElementById('payment-methods-section').classList.add('hidden');
+        document.getElementById('kaspi-payment-section').classList.remove('hidden');
     },
 
     selectPaymentMethod(method) {
         if (method === 'kaspi') {
-            document.getElementById('payment-methods-section').classList.add('hidden');
-            document.getElementById('kaspi-payment-section').classList.remove('hidden');
+            this.showKaspiSection();
         } else {
             alert('Данный метод оплаты временно недоступен. Пожалуйста, используйте Kaspi.');
         }
