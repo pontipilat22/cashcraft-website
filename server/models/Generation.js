@@ -30,6 +30,10 @@ const generationSchema = new mongoose.Schema({
         type: String,
         default: 'Demo'
     },
+    modelId: {
+        type: String,
+        default: '3783799'
+    },
     createdAt: {
         type: Date,
         default: Date.now

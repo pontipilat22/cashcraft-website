@@ -177,6 +177,7 @@ app.post('/api/webhooks/astria', async (req, res) => {
                             imageUrl: imgUrl,
                             aspectRatio: aspectRatio || '2:3',
                             modelName: modelName,
+                            modelId: modelId || '3783799',
                             status: 'completed',
                             astriaId: req.body.id || (req.body.prompt && req.body.prompt.id) || 0
                         });

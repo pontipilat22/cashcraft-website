@@ -248,7 +248,7 @@ const app = {
         }
 
         gallery.innerHTML = filteredGens.map(gen => `
-            <div class="placeholder-img" style="cursor: pointer;" onclick="app.openImageModal('${gen.imageUrl}', '${gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${gen._id}')">
+            <div class="placeholder-img" style="cursor: pointer;" onclick="app.openImageModal('${gen.imageUrl}', '${gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${gen._id}', '${gen.modelId || '3783799'}')">
                 <img src="${gen.imageUrl}" alt="${gen.prompt}">
             </div>
         `).join('');
@@ -545,7 +545,7 @@ const app = {
         }
 
         resultsDiv.innerHTML = filteredGens.map(gen => `
-            <div class="placeholder-img" style="animation: fadeIn 0.5s; cursor: pointer;" onclick="app.openImageModal('${gen.imageUrl}', '${gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${gen._id}')">
+            <div class="placeholder-img" style="animation: fadeIn 0.5s; cursor: pointer;" onclick="app.openImageModal('${gen.imageUrl}', '${gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${gen._id}', '${gen.modelId || '3783799'}')">
                 <img src="${gen.imageUrl}" alt="${gen.prompt}" style="width:100%; height:100%; object-fit:cover;">
             </div>
         `).join('');
@@ -992,8 +992,8 @@ const app = {
     currentViewedImage: null,
 
     // Open image modal
-    openImageModal(imageUrl, prompt, generationId) {
-        this.currentViewedImage = { imageUrl, prompt, generationId };
+    openImageModal(imageUrl, prompt, generationId, modelId) {
+        this.currentViewedImage = { imageUrl, prompt, generationId, modelId: modelId || '3783799' };
 
         document.getElementById('modal-image-src').src = imageUrl;
         document.getElementById('modal-image-prompt').textContent = prompt || '';
@@ -1050,14 +1050,22 @@ const app = {
             return;
         }
 
-        // Save prompt before closing modal
+        // Save data before closing modal
         const savedPrompt = this.currentViewedImage.prompt;
+        const savedModelId = this.currentViewedImage.modelId || '3783799';
 
         // Close modal
         this.closeImageModal();
 
         // Navigate to generation tab
         this.nav('generation');
+
+        // Set the correct model
+        const modelSelect = document.getElementById('generation-model-select');
+        if (modelSelect) {
+            modelSelect.value = savedModelId;
+            this.state.selectedModel = savedModelId;
+        }
 
         // Set prompt from the saved image prompt
         const textarea = document.getElementById('generation-prompt');
@@ -1073,10 +1081,10 @@ const app = {
             this.updatePhotoCount();
         }
 
-        // Trigger generation directly
+        // Trigger generation directly after a small delay
         setTimeout(() => {
             this.generateImage();
-        }, 200);
+        }, 300);
     },
 
     // ============================================
