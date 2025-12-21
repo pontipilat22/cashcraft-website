@@ -308,14 +308,80 @@
                     </div>
                 </div>
 
-                <!-- CRYSTAL PURCHASE SECTION -->
+                <!-- CRYSTAL PURCHASE TRIGGER -->
                 <div style="margin-top: 30px; margin-bottom: 20px;">
-                    <h2>💎 Пополнить баланс</h2>
-                    <p class="text-dim">Выберите пакет кристаллов для создания нейрофото</p>
+                    <h2>💎 Баланс и пополнение</h2>
+                    <p class="text-dim">Управляйте своими кристаллами</p>
                 </div>
 
-                <!-- Packages (Directly visible) -->
-                <div id="kaspi-payment-section">
+                <div class="card"
+                    style="text-align: center; cursor: pointer; border: 1px dashed var(--primary); transition: transform 0.2s;"
+                    onclick="app.nav('payment')" onmouseover="this.style.transform='scale(1.02)'"
+                    onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">💎</div>
+                    <h3>Купить кристаллы</h3>
+                    <p class="text-dim">Нажмите, чтобы перейти к оплате</p>
+                </div>
+
+                <div
+                    style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="app.logout()">Выйти</button>
+                    <button class="btn btn-secondary" onclick="app.confirmDelete()"
+                        style="color: var(--danger); border-color: rgba(220, 38, 38, 0.3);">Удалить аккаунт</button>
+                </div>
+            </section>
+
+            <!-- PAYMENT VIEW (Dedicated) -->
+            <section id="view-payment" class="page-view hidden">
+                <div style="margin-bottom: 20px;">
+                    <button onclick="app.nav('settings')"
+                        style="background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 5px;">
+                        ← Назад в профиль
+                    </button>
+                </div>
+
+                <h1 style="margin-bottom: 5px;">Пополнение баланса</h1>
+                <p class="text-dim" style="margin-bottom: 30px;">Выберите удобный способ оплаты</p>
+
+                <!-- Payment Methods Section -->
+                <div id="payment-methods-section">
+                    <div class="grid gap-2">
+                        <!-- Kaspi -->
+                        <div class="card flex items-center gap-2" style="cursor: pointer; border-color: #f14635;"
+                            onclick="app.showKaspiSection()">
+                            <div
+                                style="background: #f14635; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold;">
+                                K</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold;">Удаленная оплата Kaspi</div>
+                                <div class="text-dim" style="font-size: 0.8rem;">Оплата через Kaspi счет</div>
+                            </div>
+                            <div>➔</div>
+                        </div>
+
+                        <!-- Visa/Mastercard (Disabled) -->
+                        <div class="card flex items-center gap-2" style="opacity: 0.5; cursor: not-allowed;">
+                            <div
+                                style="background: #2563eb; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold;">
+                                V</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold;">Visa / Mastercard</div>
+                                <div class="text-dim" style="font-size: 0.8rem;">Временно недоступно</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kaspi Packages Section (Hidden by default) -->
+                <div id="kaspi-payment-section" class="hidden">
+                    <div style="margin-bottom: 20px;">
+                        <button onclick="app.showPaymentMethods()"
+                            style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px;">
+                            ← Сменить способ оплаты
+                        </button>
+                    </div>
+
+                    <h3 style="margin-bottom: 20px;">Выберите пакет:</h3>
                     <div id="packages-grid"
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                         <div class="card package-card" data-crystals="100" data-amount="3000"
@@ -346,49 +412,40 @@
                     </div>
 
                     <div id="payment-form" class="card hidden" style="border: 1px solid var(--border-color);">
-                        <h3 style="margin-bottom: 15px;">Оформление заказа</h3>
+                        <h3 style="margin-bottom: 15px;">Оформление заявки</h3>
 
                         <div
                             style="margin-bottom: 20px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px;">
-                            <p class="text-dim" style="font-size: 0.9rem; margin-bottom: 5px;">Выбранный пакет:</p>
+                            <p class="text-dim" style="font-size: 0.9rem; margin-bottom: 5px;">Пакет:</p>
                             <div id="selected-package" style="font-size: 1.2rem; font-weight: 600; color: #fff;"></div>
                         </div>
 
                         <div style="margin-bottom: 15px;">
                             <label class="text-dim" style="font-size: 0.85rem; display: block; margin-bottom: 8px;">Ваш
-                                номер Kaspi (для выставления счета)</label>
+                                номер Kaspi</label>
                             <input type="tel" id="kaspi-phone" placeholder="+7 (777) 000-00-00"
                                 style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 1rem;">
                         </div>
 
                         <div style="margin-bottom: 20px;">
                             <label class="text-dim" style="font-size: 0.85rem; display: block; margin-bottom: 8px;">Имя
-                                в Kaspi (как подписаны)</label>
+                                в Kaspi</label>
                             <input type="text" id="kaspi-name" placeholder="Например: Алина М."
                                 style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 1rem;">
                         </div>
 
                         <button class="btn btn-primary" onclick="app.createPayment()"
                             style="width: 100%; justify-content: center; padding: 14px;">
-                            Отправить заявку на оплату
+                            Отправить заявку
                         </button>
 
                         <p class="text-dim" style="text-align: center; margin-top: 15px; font-size: 0.8rem;">
-                            Вам придет счет в приложении Kaspi. Кристаллы начислятся после оплаты.
+                            Счет будет выставлен в приложении Kaspi
                         </p>
                     </div>
                 </div>
 
                 <div id="active-payments" style="margin-top: 30px;"></div>
-                <!-- END CRYSTAL PURCHASE SECTION -->
-
-                <div
-                    style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="app.logout()">Выйти</button>
-                    <button class="btn btn-secondary" onclick="app.confirmDelete()"
-                        style="color: var(--danger); border-color: rgba(220, 38, 38, 0.3);">Удалить аккаунт</button>
-                </div>
-            </section>
 
         </main>
 
