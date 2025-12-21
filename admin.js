@@ -367,6 +367,13 @@ const adminApp = {
 
     displayAdminTemplates(templates) {
         const container = document.getElementById('templates-list');
+        const datalist = document.getElementById('category-list');
+
+        // Populate category datalist
+        if (datalist) {
+            const categories = [...new Set(templates.map(t => t.category).filter(Boolean))];
+            datalist.innerHTML = categories.map(cat => `<option value="${cat}">`).join('');
+        }
 
         if (templates.length === 0) {
             container.innerHTML = '<p class="text-dim">Шаблонов пока нет</p>';
