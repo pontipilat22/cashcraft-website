@@ -12,7 +12,7 @@ const Admin = require('./models/Admin');
 const Template = require('./models/Template');
 
 const app = express();
-const { initBot, notifyAdminNewPayment } = require('./services/telegramBot');
+const { initBot, notifyAdminNewRequest, notifyAdminNewPayment } = require('./services/telegramBot');
 
 // Init Bot
 initBot();
@@ -522,6 +522,9 @@ app.post('/api/payments/create', async (req, res) => {
             kaspiName,
             status: 'pending'
         });
+
+        // Notify Admin via Telegram about new request
+        notifyAdminNewRequest(payment);
 
         res.json({ success: true, payment });
     } catch (error) {

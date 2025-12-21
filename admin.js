@@ -141,11 +141,17 @@ const adminApp = {
                         </div>
                         <div>
                             <div class="text-dim" style="font-size: 12px;">📱 Kaspi номер</div>
-                            <div style="font-weight: 600;">${payment.kaspiPhone}</div>
+                            <div style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                ${payment.kaspiPhone}
+                                <button onclick="adminApp.copyToClipboard('${payment.kaspiPhone}')" style="background: #333; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" title="Скопировать">📋</button>
+                            </div>
                         </div>
                         <div>
                             <div class="text-dim" style="font-size: 12px;">👤 Имя в Kaspi</div>
-                            <div style="font-weight: 600;">${payment.kaspiName || 'Не указано'}</div>
+                            <div style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                ${payment.kaspiName || 'Не указано'}
+                                <button onclick="adminApp.copyToClipboard('${payment.kaspiName}')" style="background: #333; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" title="Скопировать">📋</button>
+                            </div>
                         </div>
                         <div>
                             <div class="text-dim" style="font-size: 12px;">🕒 Создан</div>
@@ -504,6 +510,21 @@ const adminApp = {
             console.error('Cleanup error:', error);
             alert('Сетевая ошибка при очистке');
         }
+    },
+
+    // Copy to clipboard utility
+    copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            // Show brief confirmation
+            const toast = document.createElement('div');
+            toast.textContent = '✓ Скопировано!';
+            toast.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #22c55e; color: white; padding: 12px 24px; border-radius: 8px; z-index: 9999; animation: fadeIn 0.3s;';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 1500);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+            alert('Ошибка копирования');
+        });
     }
 };
 
