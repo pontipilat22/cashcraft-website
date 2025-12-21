@@ -581,15 +581,18 @@ const app = {
 
         this.state.isGenerating = true;
 
-        // Show loading state placeholders with AI stars
+        // Show loading state placeholders with elegant animation
         results.innerHTML = Array(photoCount).fill(0).map(() => `
             <div class="placeholder-img generating">
-                <div class="ai-stars">
-                    <svg class="ai-star-1" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
-                    <svg class="ai-star-2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
-                    <svg class="ai-star-3" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+                <div class="ai-sparkles">
+                    <span class="center-icon">🎨</span>
                 </div>
-                <div class="loading-text">Искусственный интеллект творит...</div>
+                <div class="loading-text">AI создаёт...</div>
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </div>
         `).join('');
 
