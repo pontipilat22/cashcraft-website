@@ -188,6 +188,7 @@ const app = {
             this.loadUserGenerations();
         } else if (viewName === 'settings') {
             this.refreshUserCredits();
+            this.loadUserTickets();
         } else if (viewName === 'payment') {
             document.getElementById('payment-methods-section').classList.remove('hidden');
             document.getElementById('kaspi-payment-section').classList.add('hidden');
@@ -1238,3 +1239,101 @@ async function handleGoogleSignIn(response) {
 window.addEventListener('DOMContentLoaded', () => {
     app.init();
 });
+
+// ============================================
+// SUPPORT TICKET FUNCTIONS (inside app object would be better, but adding here for simplicity)
+// ============================================
+
+app.sendSupportMessage = async function () {
+    if (!this.state.user) {
+        alert('Пожалуйста, войдите в систему');
+        return;
+    }
+
+    const subject = document.getElementById('support-subject').value;
+    const message = document.getElementById('support-message').value.trim();
+
+    if (!message) {
+        alert('Введите сообщение');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/support/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: this.state.user.id,
+                subject,
+                message
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✅ Сообщение отправлено! Мы ответим вам как можно скорее.');
+            document.getElementById('support-message').value = '';
+            this.loadUserTickets();
+        } else {
+            alert('Ошибка: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Support error:', error);
+        alert('Ошибка отправки сообщения');
+    }
+};
+
+app.loadUserTickets = async function () {
+    if (!this.state.user) return;
+
+    const container = document.getElementById('user-tickets');
+    if (!container) return;
+
+    try {
+        const response = await fetch(`${API_URL}/support/user/${this.state.user.id}`);
+        const data = await response.json();
+
+        if (data.success && data.tickets.length > 0) {
+            container.innerHTML = `
+                <h3 style="margin-bottom: 15px;">Мои обращения</h3>
+                ${data.tickets.map(ticket => {
+                const statusColors = {
+                    'open': '#eab308',
+                    'answered': '#22c55e',
+                    'closed': '#6b7280'
+                };
+                const statusText = {
+                    'open': 'Ожидает ответа',
+                    'answered': 'Есть ответ',
+                    'closed': 'Закрыто'
+                };
+                const date = new Date(ticket.createdAt).toLocaleDateString('ru-RU');
+
+                return `
+                        <div class="card" style="margin-bottom: 12px; border-left: 3px solid ${statusColors[ticket.status]};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong style="font-size: 0.95rem;">${ticket.subject}</strong>
+                                <span style="font-size: 0.8rem; color: ${statusColors[ticket.status]};">${statusText[ticket.status]}</span>
+                            </div>
+                            <p class="text-dim" style="font-size: 0.9rem; margin-bottom: 10px;">${ticket.message}</p>
+                            <div class="text-dim" style="font-size: 0.75rem;">📅 ${date}</div>
+                            
+                            ${ticket.adminReply ? `
+                                <div style="margin-top: 15px; padding: 12px; background: rgba(34, 197, 94, 0.1); border-radius: 8px; border-left: 3px solid #22c55e;">
+                                    <div style="font-size: 0.8rem; color: #22c55e; margin-bottom: 5px;">💬 Ответ поддержки:</div>
+                                    <p style="font-size: 0.9rem; margin: 0;">${ticket.adminReply}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+            }).join('')}
+            `;
+        } else {
+            container.innerHTML = '';
+        }
+    } catch (error) {
+        console.error('Error loading tickets:', error);
+    }
+};
+

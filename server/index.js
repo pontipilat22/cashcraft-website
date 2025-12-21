@@ -10,6 +10,7 @@ const Model = require('./models/Model');
 const Payment = require('./models/Payment');
 const Admin = require('./models/Admin');
 const Template = require('./models/Template');
+const SupportTicket = require('./models/SupportTicket');
 
 const app = express();
 const { initBot, notifyAdminNewRequest, notifyAdminNewPayment } = require('./services/telegramBot');
@@ -574,15 +575,22 @@ app.post('/api/admin/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // For demo: admin@example.com / admin123
-        if (email === 'admin@example.com' && password === 'admin123') {
-            res.json({
-                success: true,
-                admin: { email, role: 'admin' }
-            });
-        } else {
-            res.status(401).json({ success: false, error: 'Invalid credentials' });
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+
+        // 1. Priority: Check Environment Variables
+        if (adminEmail && adminPassword) {
+            if (email === adminEmail && password === adminPassword) {
+                return res.json({
+                    success: true,
+                    admin: { email, role: 'admin' }
+                });
+            }
         }
+
+
+        // 3. Auth Failed
+        res.status(401).json({ success: false, error: 'Invalid credentials' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -696,6 +704,130 @@ app.post('/api/admin/payments/:id/reject', async (req, res) => {
         await payment.save();
 
         res.json({ success: true, payment });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// SUPPORT TICKET ROUTES
+// ============================================
+
+// Create support ticket (User)
+app.post('/api/support/create', async (req, res) => {
+    try {
+        const { userId, subject, message } = req.body;
+
+        const ticket = await SupportTicket.create({
+            userId,
+            subject,
+            message,
+            status: 'open'
+        });
+
+        res.json({ success: true, ticket });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get user's support tickets
+app.get('/api/support/user/:userId', async (req, res) => {
+    try {
+        const tickets = await SupportTicket.find({ userId: req.params.userId })
+            .sort({ createdAt: -1 });
+
+        res.json({ success: true, tickets });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get all support tickets (Admin)
+app.get('/api/admin/support', async (req, res) => {
+    try {
+        const tickets = await SupportTicket.find()
+            .populate('userId', 'name email picture credits')
+            .sort({ createdAt: -1 });
+
+        res.json({ success: true, tickets });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Reply to support ticket (Admin)
+app.post('/api/admin/support/:id/reply', async (req, res) => {
+    try {
+        const { reply } = req.body;
+        const ticket = await SupportTicket.findById(req.params.id);
+
+        if (!ticket) {
+            return res.status(404).json({ success: false, error: 'Ticket not found' });
+        }
+
+        ticket.adminReply = reply;
+        ticket.status = 'answered';
+        ticket.repliedAt = new Date();
+        await ticket.save();
+
+        res.json({ success: true, ticket });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Close support ticket (Admin)
+app.post('/api/admin/support/:id/close', async (req, res) => {
+    try {
+        const ticket = await SupportTicket.findById(req.params.id);
+
+        if (!ticket) {
+            return res.status(404).json({ success: false, error: 'Ticket not found' });
+        }
+
+        ticket.status = 'closed';
+        await ticket.save();
+
+        res.json({ success: true, ticket });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Manually add crystals to user (Admin)
+app.post('/api/admin/users/:userId/add-crystals', async (req, res) => {
+    try {
+        const { crystals, reason } = req.body;
+        const userId = req.params.userId;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        user.credits += parseInt(crystals);
+        await user.save();
+
+        console.log(`[ADMIN] Added ${crystals} crystals to user ${user.email}. Reason: ${reason || 'Manual'}`);
+
+        res.json({
+            success: true,
+            newBalance: user.credits,
+            message: `Добавлено ${crystals} кристаллов пользователю ${user.email}`
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get user's payments (Admin - for support dispute resolution)
+app.get('/api/admin/users/:userId/payments', async (req, res) => {
+    try {
+        const payments = await Payment.find({ userId: req.params.userId })
+            .sort({ createdAt: -1 });
+
+        res.json({ success: true, payments });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

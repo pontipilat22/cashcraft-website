@@ -20,9 +20,7 @@
                 <input type="password" id="admin-password" placeholder="Пароль" required>
                 <button type="submit" class="btn btn-primary">Войти</button>
             </form>
-            <p class="text-dim" style="margin-top: 20px; font-size: 0.8rem;">
-                Demo: admin@example.com / admin123
-            </p>
+
         </div>
     </div>
 
@@ -63,6 +61,7 @@
                 <button class="tab active" onclick="adminApp.switchTab('payments')">Платежи</button>
                 <button class="tab" onclick="adminApp.switchTab('users')">Пользователи</button>
                 <button class="tab" onclick="adminApp.switchTab('templates')">Шаблоны</button>
+                <button class="tab" onclick="adminApp.switchTab('support')">💬 Поддержка</button>
             </div>
 
             <!-- Payments Tab -->
@@ -124,6 +123,13 @@
                 </div>
 
                 <div id="templates-list" class="grid-list"></div>
+            </div>
+
+            <!-- Support Tab -->
+            <div id="tab-support" class="tab-content hidden">
+                <h3>💬 Обращения в поддержку</h3>
+                <p class="text-dim" style="margin-bottom: 20px;">Ответьте на обращения пользователей</p>
+                <div id="support-list"></div>
             </div>
         </div>
     </div>

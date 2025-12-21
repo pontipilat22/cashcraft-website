@@ -323,6 +323,36 @@
                     <p class="text-dim">Нажмите, чтобы перейти к оплате</p>
                 </div>
 
+                <!-- SUPPORT SECTION -->
+                <div style="margin-top: 40px; margin-bottom: 20px;">
+                    <h2>💬 Служба поддержки</h2>
+                    <p class="text-dim">Есть вопросы? Напишите нам!</p>
+                </div>
+
+                <div class="card">
+                    <div id="support-form">
+                        <label class="text-dim" style="font-size: 0.85rem;">Тема обращения</label>
+                        <select id="support-subject" style="margin-bottom: 12px;">
+                            <option value="Вопрос по работе сервиса">Вопрос по работе сервиса</option>
+                            <option value="Проблема с оплатой">Проблема с оплатой</option>
+                            <option value="Проблема с генерацией">Проблема с генерацией</option>
+                            <option value="Проблема с обучением модели">Проблема с обучением модели</option>
+                            <option value="Другое">Другое</option>
+                        </select>
+
+                        <label class="text-dim" style="font-size: 0.85rem;">Сообщение</label>
+                        <textarea id="support-message" rows="4"
+                            placeholder="Опишите вашу проблему или задайте вопрос..."
+                            style="margin-bottom: 15px;"></textarea>
+
+                        <button class="btn btn-primary" onclick="app.sendSupportMessage()">📨 Отправить
+                            сообщение</button>
+                    </div>
+                </div>
+
+                <!-- User's tickets -->
+                <div id="user-tickets" style="margin-top: 20px;"></div>
+
                 <div
                     style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; display: flex; flex-direction: column; gap: 10px;">
                     <button class="btn btn-secondary" onclick="app.logout()">Выйти</button>

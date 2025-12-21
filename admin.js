@@ -358,6 +358,8 @@ const adminApp = {
             this.loadUsers();
         } else if (tabName === 'templates') {
             this.loadAdminTemplates();
+        } else if (tabName === 'support') {
+            this.loadSupportTickets();
         }
     },
 
@@ -525,6 +527,286 @@ const adminApp = {
             console.error('Copy failed:', err);
             alert('Ошибка копирования');
         });
+    },
+
+    // Support Ticket Functions
+    async loadSupportTickets() {
+        try {
+            const response = await fetch(`${API_URL}/admin/support`);
+            const data = await response.json();
+
+            if (data.success) {
+                this.displaySupportTickets(data.tickets);
+            }
+        } catch (error) {
+            console.error('Error loading support tickets:', error);
+        }
+    },
+
+    displaySupportTickets(tickets) {
+        const container = document.getElementById('support-list');
+
+        if (tickets.length === 0) {
+            container.innerHTML = '<p class="text-dim">Нет обращений</p>';
+            return;
+        }
+
+        const statusColors = {
+            'open': '#eab308',
+            'answered': '#22c55e',
+            'closed': '#6b7280'
+        };
+        const statusText = {
+            'open': 'Ожидает ответа',
+            'answered': 'Ответ отправлен',
+            'closed': 'Закрыто'
+        };
+
+        container.innerHTML = tickets.map(ticket => {
+            const user = ticket.userId || {};
+            const date = new Date(ticket.createdAt).toLocaleString('ru-RU');
+            const userId = user._id || '';
+
+            return `
+                <div class="payment-card" style="border-left: 4px solid ${statusColors[ticket.status]}; margin-bottom: 15px;">
+                    <div class="payment-header">
+                        <div>
+                            <div style="font-weight: 600;">${user.name || 'Неизвестный'}</div>
+                            <div class="text-dim" style="font-size: 12px;">${user.email || ''}</div>
+                            <div class="text-dim" style="font-size: 10px; margin-top: 4px;">
+                                ID: <code style="background: #333; padding: 2px 6px; border-radius: 4px; font-size: 10px;">${userId}</code>
+                                ${user.credits !== undefined ? `<span style="margin-left: 10px;">💎 ${user.credits} кристаллов</span>` : ''}
+                            </div>
+                        </div>
+                        <span style="color: ${statusColors[ticket.status]}; font-size: 0.85rem;">• ${statusText[ticket.status]}</span>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    ${userId ? `
+                        <div style="display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap;">
+                            <div style="display: flex; gap: 5px; align-items: center;">
+                                <input type="number" id="crystals-${ticket._id}" placeholder="💎" value="100" min="1" 
+                                    style="width: 80px; padding: 8px; background: #222; border: 1px solid #333; border-radius: 6px; color: white; text-align: center;">
+                                <button class="btn btn-primary" style="padding: 8px 12px; width: auto; font-size: 12px;" 
+                                    onclick="adminApp.addCrystals('${userId}', '${ticket._id}')">
+                                    💎 Пополнить
+                                </button>
+                            </div>
+                            <button class="btn btn-secondary" style="padding: 8px 12px; width: auto; font-size: 12px;" 
+                                onclick="adminApp.showUserPayments('${userId}', '${user.name || 'Пользователь'}')">
+                                📋 Заявки на оплату
+                            </button>
+                        </div>
+                    ` : ''}
+
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <div style="font-weight: 600; margin-bottom: 8px;">${ticket.subject}</div>
+                        <p class="text-dim" style="margin: 0;">${ticket.message}</p>
+                        <div class="text-dim" style="font-size: 11px; margin-top: 10px;">📅 ${date}</div>
+                    </div>
+
+                    ${ticket.adminReply ? `
+                        <div style="background: rgba(34, 197, 94, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="font-size: 0.8rem; color: #22c55e; margin-bottom: 5px;">✅ Ваш ответ:</div>
+                            <p style="margin: 0;">${ticket.adminReply}</p>
+                        </div>
+                    ` : ''}
+
+                    ${ticket.status === 'open' ? `
+                        <div style="margin-top: 15px;">
+                            <textarea id="reply-${ticket._id}" rows="3" placeholder="Ваш ответ..." 
+                                style="width: 100%; padding: 10px; background: #222; border: 1px solid #333; border-radius: 8px; color: white; resize: vertical; margin-bottom: 10px;"></textarea>
+                            <div class="flex gap-2">
+                                <button class="btn btn-primary" onclick="adminApp.replySupportTicket('${ticket._id}')">💬 Ответить</button>
+                                <button class="btn btn-secondary" onclick="adminApp.closeSupportTicket('${ticket._id}')">✖ Закрыть</button>
+                            </div>
+                        </div>
+                    ` : ticket.status === 'answered' ? `
+                        <button class="btn btn-secondary" style="opacity: 0.7;" onclick="adminApp.closeSupportTicket('${ticket._id}')">✖ Закрыть обращение</button>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    },
+
+    async replySupportTicket(ticketId) {
+        const textarea = document.getElementById(`reply-${ticketId}`);
+        const reply = textarea.value.trim();
+
+        if (!reply) {
+            alert('Введите ответ');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/admin/support/${ticketId}/reply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reply })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('✅ Ответ отправлен!');
+                this.loadSupportTickets();
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Reply error:', error);
+            alert('Ошибка отправки ответа');
+        }
+    },
+
+    async closeSupportTicket(ticketId) {
+        if (!confirm('Закрыть обращение?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/admin/support/${ticketId}/close`, {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.loadSupportTickets();
+            }
+        } catch (error) {
+            console.error('Close error:', error);
+        }
+    },
+
+    // Add crystals to user manually
+    async addCrystals(userId, ticketId) {
+        const input = document.getElementById(`crystals-${ticketId}`);
+        const crystals = parseInt(input.value);
+
+        if (!crystals || crystals < 1) {
+            alert('Введите количество кристаллов');
+            return;
+        }
+
+        const reason = prompt('Причина пополнения (для лога):', 'Ручное пополнение - проблема с оплатой');
+        if (reason === null) return; // Cancelled
+
+        try {
+            const response = await fetch(`${API_URL}/admin/users/${userId}/add-crystals`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ crystals, reason })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(`✅ ${data.message}\nНовый баланс: ${data.newBalance} 💎`);
+                this.loadSupportTickets(); // Refresh to show updated balance
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Add crystals error:', error);
+            alert('Ошибка пополнения');
+        }
+    },
+
+    // Show user's payment requests
+    async showUserPayments(userId, userName) {
+        try {
+            const response = await fetch(`${API_URL}/admin/users/${userId}/payments`);
+            const data = await response.json();
+
+            if (!data.success) {
+                alert('Ошибка загрузки заявок');
+                return;
+            }
+
+            // Create modal
+            const modal = document.createElement('div');
+            modal.id = 'user-payments-modal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; justify-content: center; align-items: center; padding: 20px;';
+
+            const content = document.createElement('div');
+            content.style.cssText = 'background: #1a1a1a; border-radius: 16px; padding: 24px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;';
+
+            const statusColors = {
+                'pending': '#eab308',
+                'paid': '#22c55e',
+                'confirmed': '#22c55e',
+                'rejected': '#6b7280'
+            };
+            const statusLabels = {
+                'pending': 'Ожидает счёт',
+                'paid': 'Оплачено',
+                'confirmed': 'Подтверждено',
+                'rejected': 'Отклонено'
+            };
+
+            const paymentsHtml = data.payments.length === 0
+                ? '<p class="text-dim">Нет заявок на оплату</p>'
+                : data.payments.map(p => {
+                    const date = new Date(p.createdAt).toLocaleString('ru-RU');
+                    return `
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid ${statusColors[p.status]};">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 600;">💎 ${p.crystals} за ${p.amount}₸</span>
+                                <span style="color: ${statusColors[p.status]}; font-size: 0.85rem;">● ${statusLabels[p.status]}</span>
+                            </div>
+                            <div class="text-dim" style="font-size: 12px;">📱 ${p.kaspiPhone} | ${p.kaspiName || '-'}</div>
+                            <div class="text-dim" style="font-size: 11px; margin-top: 5px;">📅 ${date}</div>
+                            ${p.status === 'pending' || p.status === 'paid' ? `
+                                <button class="btn btn-danger" style="margin-top: 10px; padding: 6px 12px; font-size: 11px; width: auto;" 
+                                    onclick="adminApp.deletePaymentFromModal('${p._id}')">
+                                    🗑 Удалить заявку
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">📋 Заявки: ${userName}</h3>
+                    <button onclick="document.getElementById('user-payments-modal').remove()" 
+                        style="background: none; border: none; color: #999; font-size: 24px; cursor: pointer;">×</button>
+                </div>
+                <p class="text-dim" style="margin-bottom: 15px; font-size: 12px;">ID: ${userId}</p>
+                ${paymentsHtml}
+            `;
+
+            modal.appendChild(content);
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+            document.body.appendChild(modal);
+
+        } catch (error) {
+            console.error('Show payments error:', error);
+            alert('Ошибка загрузки заявок');
+        }
+    },
+
+    // Delete payment from modal
+    async deletePaymentFromModal(paymentId) {
+        if (!confirm('Удалить эту заявку на оплату? Это действие необратимо.')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/admin/payments/${paymentId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('✅ Заявка удалена');
+                document.getElementById('user-payments-modal').remove();
+                this.loadSupportTickets();
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Ошибка удаления');
+        }
     }
 };
 
