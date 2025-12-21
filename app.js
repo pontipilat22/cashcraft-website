@@ -20,6 +20,7 @@ const app = {
     init() {
         console.log("App initialized");
         this.loadUserFromStorage();
+        this.loadSettings();
         this.startCreditRefresh(); // Start automatic credit refresh
     },
 
@@ -162,6 +163,10 @@ const app = {
         }
 
         this.state.currentView = viewName;
+
+        // Reset scroll position
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.scrollTop = 0;
 
         // Load data for specific views
         if (viewName === 'buy-crystals') {
@@ -382,6 +387,7 @@ const app = {
                 ratioButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.state.selectedRatio = btn.getAttribute('data-ratio');
+                this.saveSettings();
             });
         });
     },
@@ -390,6 +396,7 @@ const app = {
     updatePhotoCount() {
         const select = document.getElementById('photo-count-select');
         this.state.photoCount = parseInt(select.value);
+        this.saveSettings();
         const cost = this.state.photoCount * 3; // 3 crystals per photo
 
         const costSpan = document.getElementById('generation-cost');
@@ -402,6 +409,7 @@ const app = {
     updateModelSelection() {
         const select = document.getElementById('generation-model-select');
         this.state.selectedModel = select.value;
+        this.saveSettings();
     },
 
     // Navigates to generation and selects a model
