@@ -47,9 +47,8 @@
         <div class="landing-overlay"></div>
 
         <div class="landing-content">
-            <h1 style="font-size: 2.5rem; line-height: 1.1;">AI Portrait<br>Genesis</h1>
-            <p class="text-dim" style="margin: 20px 0;">Загрузи свои селфи — получи профессиональную AI-модель
-                студийного качества.</p>
+            <h1>AI Portrait<br>Genesis</h1>
+            <p class="text-dim">Загрузи свои селфи — получи профессиональную AI-модель студийного качества.</p>
 
             <div class="flex flex-col gap-2" style="align-items: center;">
                 <!-- Google Sign-In Button -->
@@ -98,16 +97,11 @@
             <nav class="flex flex-col gap-2">
                 <button class="btn btn-secondary" onclick="app.nav('create')">+ Новая модель</button>
                 <div style="height: 20px;"></div>
-                <button class="btn btn-ghost" style="justify-content: flex-start; color: var(--text-dim);"
-                    onclick="app.nav('generation')">🎨 Генерация</button>
-                <button class="btn btn-ghost" style="justify-content: flex-start; color: var(--text-dim);"
-                    onclick="app.nav('models')">👤 Мои модели</button>
-                <button class="btn btn-ghost" style="justify-content: flex-start; color: var(--text-dim);"
-                    onclick="app.nav('templates')">🖼️ Шаблоны</button>
-                <button class="btn btn-ghost" style="justify-content: flex-start; color: var(--text-dim);"
-                    onclick="app.nav('gallery')">📚 Библиотека</button>
-                <button class="btn btn-ghost" style="justify-content: flex-start; color: var(--text-dim);"
-                    onclick="app.nav('settings')">⚙️ Профиль</button>
+                <button class="btn btn-ghost" onclick="app.nav('generation')">🎨 Генерация</button>
+                <button class="btn btn-ghost" onclick="app.nav('models')">👤 Мои модели</button>
+                <button class="btn btn-ghost" onclick="app.nav('templates')">🖼️ Шаблоны</button>
+                <button class="btn btn-ghost" onclick="app.nav('gallery')">📚 Библиотека</button>
+                <button class="btn btn-ghost" onclick="app.nav('settings')">⚙️ Профиль</button>
             </nav>
         </aside>
 
@@ -128,15 +122,14 @@
                 </div>
 
                 <!-- Prompt Input -->
-                <div class="card" style="padding: 15px;">
-                    <textarea id="generation-prompt" rows="3" placeholder="Опишите образ..."
-                        style="margin-bottom: 8px; font-size: 15px;"></textarea>
+                <div class="card">
+                    <textarea id="generation-prompt" rows="3" placeholder="Опишите образ..."></textarea>
 
                     <!-- Compact Settings Row -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                         <!-- Aspect Ratio Button -->
                         <button class="settings-btn" onclick="app.showRatioModal()"
-                            style="justify-content: space-between; padding: 10px 12px;">
+                            style="justify-content: space-between;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <div id="ratio-icon"></div>
                                 <span id="ratio-label" style="font-size: 13px; font-weight: 500;">2:3</span>
@@ -145,8 +138,7 @@
                         </button>
 
                         <!-- Photo Count Select -->
-                        <select id="photo-count-select" onchange="app.updatePhotoCount()"
-                            style="margin-bottom: 0; padding: 10px 12px; font-size: 13px; background: var(--bg-input); border: 1px solid var(--border-color);">
+                        <select id="photo-count-select" onchange="app.updatePhotoCount()" style="margin-bottom: 0;">
                             <option value="1">1 фото</option>
                             <option value="2">2 фото</option>
                             <option value="3">3 фото</option>
@@ -154,16 +146,17 @@
                             <option value="5">5 фото</option>
                             <option value="6">6 фото</option>
                             <option value="8">8 фото</option>
+                            <option value="8">8 фото</option>
                         </select>
                     </div>
 
                     <!-- Quality Settings -->
                     <div style="margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <label class="quality-toggle" style="padding: 8px 12px; font-size: 0.8rem;">
+                        <label class="quality-toggle">
                             <input type="checkbox" id="toggle-super-res">
                             <span>HD Качество</span>
                         </label>
-                        <label class="quality-toggle" style="padding: 8px 12px; font-size: 0.8rem;">
+                        <label class="quality-toggle">
                             <input type="checkbox" id="toggle-film-grain">
                             <span>Плёнка</span>
                         </label>
@@ -172,8 +165,7 @@
                     <!-- SELECTED TEMPLATE YARLYK (Label) -->
                     <div id="selected-template-preview" class="hidden" style="margin-bottom: 15px;"></div>
 
-                    <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()"
-                        style="padding: 14px; font-size: 15px;">
+                    <button class="btn btn-primary" id="generate-btn" onclick="app.generateImage()">
                         <span id="generation-cost">4 фото — 8 💎</span>
                     </button>
                 </div>
@@ -186,10 +178,9 @@
                     </div>
                 </div>
 
-                <div class="card" style="margin-top: 2rem; background: linear-gradient(145deg, #1a1a1a, #222);">
+                <div class="card">
                     <h3>Ваше лицо в AI</h3>
-                    <p class="text-dim" style="font-size: 0.85rem;">Обучите модель со своим лицом для персональных
-                        портретов.</p>
+                    <p class="text-dim">Обучите модель со своим лицом для персональных портретов.</p>
                     <div class="flex gap-2">
                         <button class="btn btn-primary" onclick="app.nav('create')">Создать модель</button>
                         <button class="btn btn-secondary" onclick="app.nav('settings')">💎 Купить кристаллы</button>
@@ -212,8 +203,7 @@
 
                 <!-- Gender Selection -->
                 <div class="card">
-                    <label class="text-dim" style="font-size: 0.9rem; display: block; margin-bottom: 10px;">Укажите пол
-                        человека на фотографиях</label>
+                    <label>Укажите пол человека на фотографиях</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                         <button class="ratio-btn active" data-gender="man" onclick="app.selectGender('man')">👨
                             Мужчина</button>
@@ -232,8 +222,7 @@
 
                     <div
                         style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                        <h4 style="color: #ffc107; margin-bottom: 10px;">⚠️ Рекомендуется 8-20 фото для лучшего
-                            сходства:</h4>
+                        <h4 style="color: #ffc107; margin-bottom: 10px;">⚠️ Рекомендуется 8-20 фото:</h4>
                         <ul class="text-dim" style="padding-left: 20px; font-size: 0.85rem; line-height: 1.6;">
                             <li><strong>Одно лицо</strong> — на фото должен быть только один человек</li>
                             <li><strong>Качество</strong> — четкие фото, без размытия</li>
@@ -426,8 +415,7 @@
                             </p>
                         </div>
 
-                        <button class="btn btn-primary" onclick="app.createPayment()"
-                            style="cursor: pointer; user-select: none;">
+                        <button class="btn btn-primary" onclick="app.createPayment()">
                             Отправить запрос
                         </button>
                     </div>
