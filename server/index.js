@@ -341,7 +341,7 @@ app.post('/api/generations', async (req, res) => {
                     messages: [
                         {
                             role: "system",
-                            content: "You are a professional AI prompt engineer. MANDATORY: Translate the input to English and expand it into a detailed photorealistic prompt. Structure: [Subject], [Environment], [Lighting], [Camera/Quality]. CRITICAL: Always output in English only. Never include Russian text in the output."
+                            content: "You are a professional AI prompt engineer. MANDATORY: Translate the input to English and expand it into a detailed photorealistic prompt. Structure: [Subject], [Environment], [Lighting], [Camera/Quality]. CRITICAL: Always output in English only. Never include Russian text. NEVER include '<lora:...>' or 'ohwx' trigger words in your output. Just describe the image visual details."
                         },
                         { role: "user", content: `Translate and enhance this for Flux.1 AI: ${prompt}` }
                     ],
@@ -358,7 +358,8 @@ app.post('/api/generations', async (req, res) => {
                 if (dsResponse.data.choices && dsResponse.data.choices[0].message) {
                     const result = dsResponse.data.choices[0].message.content.trim();
                     if (result && result.length > 5) {
-                        enhancedPrompt = result;
+                        // Clean up any potential LoRA tags from DeepSeek output
+                        enhancedPrompt = result.replace(/<lora:[^>]+>/g, '').replace(/\bohwx\b/g, '').trim();
                         console.log(`[DeepSeek] Success! New prompt: ${enhancedPrompt}`);
                     }
                 }
