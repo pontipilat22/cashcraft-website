@@ -482,9 +482,25 @@ const app = {
                         modelsList.appendChild(card);
                     }
                 });
-            } else if (modelsList) {
+            }
+
+            if (data.models.length === 0 && modelsList) {
                 modelsList.innerHTML = '<p class="text-dim">У вас пока нет созданных моделей</p>';
             }
+
+            // Validate selectedModel
+            // If current selected model is NOT in the list and NOT the demo model, reset to demo
+            const options = Array.from(select.options).map(opt => opt.value);
+            if (!options.includes(this.state.selectedModel)) {
+                console.warn(`[App] Selected model ${this.state.selectedModel} not found in user list. Resetting to Demo.`);
+                this.state.selectedModel = '3783799';
+                select.value = '3783799';
+                this.saveSettings();
+            } else {
+                // Determine if we should select the stored value
+                select.value = this.state.selectedModel;
+            }
+
         } catch (error) {
             console.error('Error loading models:', error);
         }
