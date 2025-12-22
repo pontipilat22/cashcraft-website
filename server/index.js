@@ -153,46 +153,53 @@ app.post('/api/webhooks/astria', async (req, res) => {
             }
         } else if (type === 'prompt') {
             // Handle Image Generation Completion
-            // Astria usually sends images in req.body.images OR req.body.prompt.images
+            const generationId = req.query.generationId;
             let images = req.body.images;
             if (!images && req.body.prompt && req.body.prompt.images) {
                 images = req.body.prompt.images;
             }
 
-            if (images && Array.isArray(images)) {
-                // Fetch model to get name
-                let modelName = 'Unknown Model';
-                if (modelId === '3783799') {
-                    modelName = 'Anna Flux (Demo)';
-                } else if (mongoose.Types.ObjectId.isValid(modelId)) {
-                    const model = await Model.findById(modelId);
-                    if (model) modelName = model.name;
-                }
+            if (images && Array.isArray(images) && images.length > 0) {
+                console.log(`[Webhook] Processing ${images.length} images for user ${userId}`);
 
-                console.log(`Creating ${images.length} generations for user ${userId}...`);
+                // If generationId exists, we update the FIRST image to that record
+                // ASTNIA sends array of images.
 
-                for (const imgUrl of images) {
+                for (let i = 0; i < images.length; i++) {
+                    const imgUrl = images[i];
                     try {
-                        if (!mongoose.Types.ObjectId.isValid(userId)) {
-                            console.error(`[Astria Webhook] Invalid userId in query: ${userId}`);
-                            break;
-                        }
+                        if (i === 0 && generationId && mongoose.Types.ObjectId.isValid(generationId)) {
+                            // Update existing record
+                            const gen = await Generation.findByIdAndUpdate(generationId, {
+                                status: 'completed',
+                                imageUrl: imgUrl,
+                                astriaId: req.body.id || 0
+                            });
+                            console.log(`[Webhook] Updated existing generation ${generationId}`);
+                        } else {
+                            // Create new records for extra images (or if no generationId)
+                            let modelName = 'Anna Flux (Demo)';
+                            if (modelId !== '3783799' && mongoose.Types.ObjectId.isValid(modelId)) {
+                                const model = await Model.findById(modelId);
+                                if (model) modelName = model.name;
+                            }
 
-                        await Generation.create({
-                            userId: userId,
-                            prompt: (req.body.prompt && req.body.prompt.text) ? req.body.prompt.text : 'AI Generated',
-                            imageUrl: imgUrl,
-                            aspectRatio: aspectRatio || '2:3',
-                            modelName: modelName,
-                            modelId: modelId || '3783799',
-                            status: 'completed',
-                            astriaId: req.body.id || (req.body.prompt && req.body.prompt.id) || 0
-                        });
+                            await Generation.create({
+                                userId: userId,
+                                prompt: (req.body.prompt && req.body.prompt.text) ? req.body.prompt.text : 'AI Generated (Extra)',
+                                imageUrl: imgUrl,
+                                aspectRatio: aspectRatio || '2:3',
+                                modelName: modelName,
+                                modelId: modelId || '3783799',
+                                status: 'completed',
+                                astriaId: req.body.id || 0
+                            });
+                            console.log(`[Webhook] Created new generation record for image ${i + 1}`);
+                        }
                     } catch (genError) {
-                        console.error('[Astria Webhook] Error creating generation record:', genError.message);
+                        console.error('[Astria Webhook] Error processing image:', genError.message);
                     }
                 }
-                console.log(`Success: ${images.length} generations processed.`);
             } else {
                 console.warn('Webhook received but no images found in body.');
             }
@@ -283,7 +290,7 @@ app.post('/api/generations', async (req, res) => {
         }
 
         // 2. Check Model
-        console.log(`[Generation] Received modelId: ${modelId}`);
+        console.log(`[Generation] Received modelId: ${modelId} from User: ${userId}`);
         let modelAstriaId = modelId;
         let modelGender = 'woman';
         let modelName = 'Anna Flux (Demo)';
@@ -293,9 +300,22 @@ app.post('/api/generations', async (req, res) => {
                 return res.status(400).json({ error: 'Invalid Model ID format' });
             }
             const model = await Model.findById(modelId);
-            if (!model || !model.astriaId) {
-                return res.status(404).json({ error: 'Model not trained or not found' });
+
+            // SECURITY CHECK: Verify ownership
+            if (!model) {
+                return res.status(404).json({ error: 'Model not found' });
             }
+
+            // Check if model belongs to user (Security Fix)
+            if (model.userId.toString() !== userId) {
+                console.warn(`[Security Alert] User ${userId} tried to use model ${modelId} belonging to ${model.userId}`);
+                return res.status(403).json({ error: 'Access denied: You do not own this model' });
+            }
+
+            if (!model.astriaId) {
+                return res.status(400).json({ error: 'Model not trained yet' });
+            }
+
             modelAstriaId = model.astriaId;
             modelGender = model.gender || 'person';
             modelName = model.name;
@@ -313,6 +333,7 @@ app.post('/api/generations', async (req, res) => {
 
         if (DEEPSEEK_KEY) {
             try {
+                // ... DeepSeek logic remains same ...
                 console.log(`[DeepSeek] Start enhancement for: "${prompt}"`);
                 const dsResponse = await axios.post('https://api.deepseek.com/chat/completions', {
                     model: "deepseek-chat",
@@ -330,7 +351,7 @@ app.post('/api/generations', async (req, res) => {
                         'Authorization': `Bearer ${DEEPSEEK_KEY}`,
                         'Content-Type': 'application/json'
                     },
-                    timeout: 15000 // Increase timeout to 15s
+                    timeout: 15000
                 });
 
                 if (dsResponse.data.choices && dsResponse.data.choices[0].message) {
@@ -340,18 +361,13 @@ app.post('/api/generations', async (req, res) => {
                         console.log(`[DeepSeek] Success! New prompt: ${enhancedPrompt}`);
                     }
                 }
+                // ... End DeepSeek logic ...
             } catch (dsError) {
                 console.error('[DeepSeek Error] Detail:', dsError.response?.data || dsError.message);
             }
-        } else {
-            console.warn('[DeepSeek] Skipping enhancement: DEEPSEEK_API_KEY is not defined in environment.');
         }
 
-        const API_KEY = process.env.ASTRIA_API_KEY;
-        const BASE_DOMAIN = process.env.BASE_DOMAIN || 'https://www.ai-photo.kz';
-
-        const webhookUrl = `${BASE_DOMAIN}/api/webhooks/astria?type=prompt&userId=${userId}&modelId=${modelId}&aspectRatio=${aspectRatio}`;
-
+        // 5. Create Generation Record EARLY (To save enhanced prompt)
         const bbox = {
             '1:1': { w: 512, h: 512 },
             '2:3': { w: 512, h: 768 },
@@ -360,6 +376,24 @@ app.post('/api/generations', async (req, res) => {
             '16:9': { w: 896, h: 512 }
         };
         const size = bbox[aspectRatio] || bbox['2:3'];
+
+        const newGeneration = await Generation.create({
+            userId: user._id,
+            prompt: enhancedPrompt, // Save the ENHANCED prompt
+            originalPrompt: prompt, // Optional: save original if needed later
+            imageUrl: 'https://via.placeholder.com/512?text=Processing...', // Temp placeholder
+            status: 'processing',
+            modelName: modelName,
+            modelId: modelId || '3783799',
+            aspectRatio: aspectRatio,
+            astriaId: null, // Will be updated on callback
+        });
+
+        const API_KEY = process.env.ASTRIA_API_KEY;
+        const BASE_DOMAIN = process.env.BASE_DOMAIN || 'https://www.ai-photo.kz';
+
+        // Add generationId to webhook URL
+        const webhookUrl = `${BASE_DOMAIN}/api/webhooks/astria?type=prompt&userId=${userId}&modelId=${modelId}&generationId=${newGeneration._id}`;
 
         const promptPayload = {
             prompt: {
@@ -376,19 +410,31 @@ app.post('/api/generations', async (req, res) => {
         };
 
         console.log(`[Astria] Sending to tune ID: ${modelAstriaId}`);
-        console.log(`[Astria] Prompt text: ${promptPayload.prompt.text}`);
-        console.log(`[Astria] Model name: ${modelName}`);
+        console.log(`[Astria] Generation ID: ${newGeneration._id}`);
 
-        const response = await axios.post(`https://api.astria.ai/tunes/${modelAstriaId}/prompts`, promptPayload, {
-            headers: { 'Authorization': `Bearer ${API_KEY}` }
-        });
+        try {
+            const response = await axios.post(`https://api.astria.ai/tunes/${modelAstriaId}/prompts`, promptPayload, {
+                headers: { 'Authorization': `Bearer ${API_KEY}` }
+            });
 
-        // We don't save Generation record HERE because we don't have images yet.
-        // Or we save one "placeholder" Generation representing the Prompt request?
-        // Better: We rely on Webhook to CREATE the generation records when images are ready.
-        // OR: We return success, Frontend waits.
+            // Update generation with Astria ID
+            newGeneration.astriaId = response.data.id;
+            await newGeneration.save();
 
-        res.json({ success: true, promptId: response.data.id, remainingCredits: user.credits });
+            res.json({ success: true, promptId: response.data.id, remainingCredits: user.credits });
+
+        } catch (astriaError) {
+            // Rollback: Mark as failed and refund credits
+            console.error('Astria API Failed:', astriaError.message);
+            newGeneration.status = 'failed';
+            await newGeneration.save();
+
+            user.credits += cost;
+            await user.save();
+
+            throw astriaError; // Re-throw to catch block
+        }
+
     } catch (error) {
         console.error('Generation Error Detail:', error.response?.data);
         const errorMsg = error.response?.data
