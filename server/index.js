@@ -283,6 +283,7 @@ app.post('/api/generations', async (req, res) => {
         }
 
         // 2. Check Model
+        console.log(`[Generation] Received modelId: ${modelId}`);
         let modelAstriaId = modelId;
         let modelGender = 'woman';
         let modelName = 'Anna Flux (Demo)';
@@ -362,7 +363,7 @@ app.post('/api/generations', async (req, res) => {
 
         const promptPayload = {
             prompt: {
-                text: `ohwx ${modelGender} ${enhancedPrompt}`,
+                text: `<lora:${modelAstriaId}:1.0> ohwx ${modelGender} ${enhancedPrompt}`,
                 num_images: Math.min(photoCount, 8),
                 callback: webhookUrl,
                 super_resolution: !!superResolution,
@@ -373,6 +374,10 @@ app.post('/api/generations', async (req, res) => {
                 h: size.h
             }
         };
+
+        console.log(`[Astria] Sending to tune ID: ${modelAstriaId}`);
+        console.log(`[Astria] Prompt text: ${promptPayload.prompt.text}`);
+        console.log(`[Astria] Model name: ${modelName}`);
 
         const response = await axios.post(`https://api.astria.ai/tunes/${modelAstriaId}/prompts`, promptPayload, {
             headers: { 'Authorization': `Bearer ${API_KEY}` }
