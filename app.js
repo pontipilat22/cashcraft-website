@@ -1361,8 +1361,12 @@ const app = {
 // ============================================
 
 async function handleGoogleSignIn(response) {
+    console.log('Google Sign-In response received', response);
+    // alert('Debug: Google Sign-In callback triggered!'); 
+
     try {
         // Send token to backend
+        console.log('Sending token to:', `${API_URL}/auth/google`);
         const res = await fetch(`${API_URL}/auth/google`, {
             method: 'POST',
             headers: {
@@ -1374,10 +1378,17 @@ async function handleGoogleSignIn(response) {
         });
 
         const data = await res.json();
+        console.log('Auth response:', data);
 
         if (data.success) {
+            console.log('Auth success, logging in user:', data.user);
             app.state.user = data.user;
             app.saveUserToStorage(data.user);
+
+            // Critical fix: Ensure UI updates
+            const landing = document.getElementById('page-landing');
+            if (landing) landing.classList.add('hidden');
+
             app.showMainApp();
             app.loadUserGenerations();
         } else {
