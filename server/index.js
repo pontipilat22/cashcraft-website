@@ -307,7 +307,8 @@ app.post('/api/generations', async (req, res) => {
             }
 
             // Check if model belongs to user (Security Fix)
-            if (model.userId.toString() !== userId) {
+            // EXCEPTION: Allow if it's the specific Demo Model ID
+            if (model.userId.toString() !== userId && modelId !== '3783799') {
                 console.warn(`[Security Alert] User ${userId} tried to use model ${modelId} belonging to ${model.userId}`);
                 return res.status(403).json({ error: 'Access denied: You do not own this model' });
             }
