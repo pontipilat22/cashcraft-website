@@ -234,14 +234,21 @@ const app = {
     // Render a single image card (Unified Style)
     renderImageCard(gen) {
         // Premium card style with cover fit, shadow, and click handler
-        // Supports 'processing' state if needed (though usually filtered before here if no image)
         const promptSafe = gen.prompt ? gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
         const modelId = gen.modelId || '3783799';
 
+        // Calculate aspect ratio style if available, default to square-ish if not
+        // But for grid consistency, we often want fixed height or just let object-fit do the work.
+        // Actually, for a masonry look, we'd need aspect-ratio. For a grid, we want uniform cells.
+        // Let's stick to the grid cell but ensure the image covers it fully.
+
         return `
-            <div class="placeholder-img" style="animation: fadeIn 0.5s; cursor: pointer; position: relative; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);" 
+            <div class="placeholder-img" style="animation: fadeIn 0.5s; cursor: pointer; position: relative; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: #2a2a2a; aspect-ratio: ${gen.aspectRatio ? gen.aspectRatio.replace(':', '/') : '2/3'};" 
                  onclick="app.openImageModal('${gen.imageUrl}', '${promptSafe}', '${gen._id}', '${modelId}')">
-                <img src="${gen.imageUrl}" alt="${promptSafe}" style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s ease;">
+                <img src="${gen.imageUrl}" 
+                     alt="${promptSafe}" 
+                     style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s ease; display: block;"
+                     onerror="this.parentElement.style.display='none'"> 
                 ${gen.status === 'processing' ? `
                     <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
                         <div class="spinner"></div>
@@ -881,7 +888,15 @@ const app = {
         const btn = document.getElementById('train-btn');
         const orgText = btn.innerText;
         btn.disabled = true;
-        btn.innerText = "⏳ Загрузка фото...";
+        btn.innerText = "⏳ Не закрывайте вкладку! Загрузка фото...";
+
+        // Prevent tab close
+        const preventClose = (e) => {
+            e.preventDefault();
+            e.returnValue = 'Идет загрузка фото. Вы уверены, что хотите уйти?';
+            return e.returnValue;
+        };
+        window.addEventListener('beforeunload', preventClose);
 
         try {
             // 1. Upload photos first
@@ -889,7 +904,7 @@ const app = {
 
             for (let i = 0; i < this.state.uploadedFiles.length; i++) {
                 const file = this.state.uploadedFiles[i];
-                const progressMsg = `⏳ Загрузка ${i + 1}/${this.state.uploadedFiles.length}...`;
+                const progressMsg = `⏳ Загрузка ${i + 1}/${this.state.uploadedFiles.length}... Не закрывайте вкладку!`;
                 btn.innerText = progressMsg;
                 console.log(`[Training] ${progressMsg}`);
 
@@ -957,6 +972,9 @@ const app = {
                 document.getElementById('file-count').innerText = '0';
                 this.state.uploadedFiles = [];
 
+                // Clear selected files state properly
+                this.handleFiles(document.getElementById('file-input'));
+
                 btn.innerText = orgText;
                 btn.disabled = false;
 
@@ -970,6 +988,9 @@ const app = {
             alert('❌ Ошибка обучения:\n' + errorMsg + '\n\nБаланс кристаллов был возвращен.');
             btn.innerText = orgText;
             btn.disabled = false;
+        } finally {
+            // Remove prevention
+            window.removeEventListener('beforeunload', preventClose);
         }
     },
 
