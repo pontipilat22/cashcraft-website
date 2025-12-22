@@ -231,11 +231,32 @@ const app = {
         }
     },
 
+    // Render a single image card (Unified Style)
+    renderImageCard(gen) {
+        // Premium card style with cover fit, shadow, and click handler
+        // Supports 'processing' state if needed (though usually filtered before here if no image)
+        const promptSafe = gen.prompt ? gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
+        const modelId = gen.modelId || '3783799';
+
+        return `
+            <div class="placeholder-img" style="animation: fadeIn 0.5s; cursor: pointer; position: relative; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);" 
+                 onclick="app.openImageModal('${gen.imageUrl}', '${promptSafe}', '${gen._id}', '${modelId}')">
+                <img src="${gen.imageUrl}" alt="${promptSafe}" style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s ease;">
+                ${gen.status === 'processing' ? `
+                    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+                        <div class="spinner"></div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    },
+
     // Display generations in gallery
     displayGenerations() {
         const gallery = document.querySelector('#view-gallery .image-grid');
         if (!gallery) return;
 
+        // Show all, including processing if we want
         const filteredGens = this.state.generations.filter(gen => {
             const url = gen.imageUrl.toLowerCase();
             return !url.includes('picsum.photos') && !url.includes('unsplash.com');
@@ -246,11 +267,7 @@ const app = {
             return;
         }
 
-        gallery.innerHTML = filteredGens.map(gen => `
-            <div class="placeholder-img" style="cursor: pointer;" onclick="app.openImageModal('${gen.imageUrl}', '${gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${gen._id}', '${gen.modelId || '3783799'}')">
-                <img src="${gen.imageUrl}" alt="${gen.prompt}">
-            </div>
-        `).join('');
+        gallery.innerHTML = filteredGens.map(gen => this.renderImageCard(gen)).join('');
     },
 
     // Save generation to database
@@ -544,7 +561,7 @@ const app = {
     // Display recent generations
     displayRecentGenerations(generations) {
         // Prevent clearing placeholders if we are currently generating
-        if (this.state.isGenerating) return;
+        if (this.state.isGenerating && generations.length === 0) return;
 
         const resultsDiv = document.getElementById('generation-results');
         if (!resultsDiv) return;
@@ -559,11 +576,7 @@ const app = {
             return;
         }
 
-        resultsDiv.innerHTML = filteredGens.map(gen => `
-            <div class="placeholder-img" style="animation: fadeIn 0.5s; cursor: pointer;" onclick="app.openImageModal('${gen.imageUrl}', '${gen.prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${gen._id}', '${gen.modelId || '3783799'}')">
-                <img src="${gen.imageUrl}" alt="${gen.prompt}" style="width:100%; height:100%; object-fit:cover;">
-            </div>
-        `).join('');
+        resultsDiv.innerHTML = filteredGens.map(gen => this.renderImageCard(gen)).join('');
     },
 
     // Main generation function
@@ -667,6 +680,9 @@ const app = {
                         btn.innerHTML = originalHTML;
                         btn.disabled = false;
                         this.displayRecentGenerations(gens);
+
+                        // SYNC: Update the gallery view as well
+                        this.loadUserGenerations();
                     }
                 }
 
@@ -683,9 +699,12 @@ const app = {
             // Stop polling after success? No, just let it run a bit.
             setTimeout(() => {
                 clearInterval(interval);
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-                alert(`✅ Запрос отправлен! Изображения скоро появятся.`);
+                // Only reset if still generating (to avoid overriding success state)
+                if (this.state.isGenerating) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    alert(`✅ Запрос отправлен! Изображения скоро появятся.`);
+                }
             }, 20000); // Stop UI loading state after 20s, let background polling continue?
             // Actually better to keep button disabled? No, user might want to try again.
 
