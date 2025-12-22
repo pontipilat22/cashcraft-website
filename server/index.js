@@ -334,16 +334,16 @@ app.post('/api/generations', async (req, res) => {
 
         if (DEEPSEEK_KEY) {
             try {
-                // ... DeepSeek logic remains same ...
+                // ... DeepSeek logic ...
                 console.log(`[DeepSeek] Start enhancement for: "${prompt}"`);
                 const dsResponse = await axios.post('https://api.deepseek.com/chat/completions', {
                     model: "deepseek-chat",
                     messages: [
                         {
                             role: "system",
-                            content: "You are a professional AI prompt engineer. MANDATORY: Translate the input to English and expand it into a detailed photorealistic prompt. Structure: [Subject], [Environment], [Lighting], [Camera/Quality]. CRITICAL: Always output in English only. Never include Russian text. NEVER include '<lora:...>' or 'ohwx' trigger words in your output. Just describe the image visual details."
+                            content: "You are a professional AI prompt translator. MANDATORY: Translate the input to English (if not already) and slightly enhance it for photorealism. Keep it concise. CRITICAL: Output ONLY the visual description in English. Do NOT include any technical tags like '<lora:...>' or 'ohwx' or 'trigger words'."
                         },
-                        { role: "user", content: `Translate and enhance this for Flux.1 AI: ${prompt}` }
+                        { role: "user", content: `Translate: ${prompt}` }
                     ],
                     max_tokens: 500,
                     temperature: 0.7
@@ -358,15 +358,33 @@ app.post('/api/generations', async (req, res) => {
                 if (dsResponse.data.choices && dsResponse.data.choices[0].message) {
                     const result = dsResponse.data.choices[0].message.content.trim();
                     if (result && result.length > 5) {
-                        // Clean up any potential LoRA tags from DeepSeek output
-                        enhancedPrompt = result.replace(/<lora:[^>]+>/g, '').replace(/\bohwx\b/g, '').trim();
+                        // Just rely on DeepSeek's translation, don't strip tags excessively
+                        enhancedPrompt = result;
                         console.log(`[DeepSeek] Success! New prompt: ${enhancedPrompt}`);
                     }
                 }
-                // ... End DeepSeek logic ...
             } catch (dsError) {
                 console.error('[DeepSeek Error] Detail:', dsError.response?.data || dsError.message);
             }
+        } else {
+            console.log('[DeepSeek] Skipped (No Key)');
+        }
+
+        // 5. Construct Final Prompt for Astria
+        // IMPORTANT: Inject trigger word 'ohwx' for custom models if not present
+        let finalPrompt = enhancedPrompt;
+
+        // If it's a CUSTOM model (not the public demo), ensure trigger word is present
+        if (modelId !== '3783799' && !finalPrompt.includes('ohwx')) {
+            finalPrompt = `ohwx person, ${finalPrompt}`;
+            console.log('[Prompt Engineering] Injected "ohwx" trigger word for custom model');
+        }
+
+        // Append LoRA Syntax (Always required for Astria to use the model)
+        // If it's the demo, uses its ID. If custom, uses its ID.
+        // Format: <lora:ID:1.0>
+        if (!finalPrompt.includes(`<lora:${modelAstriaId}`)) {
+            finalPrompt = `${finalPrompt} <lora:${modelAstriaId}:1.0>`;
         }
 
         // 5. Create Generation Record EARLY (To save enhanced prompt)
